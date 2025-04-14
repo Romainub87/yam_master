@@ -13,8 +13,7 @@ export function handleQueueJoin(client, payload) {
     addWaitingClient(client);
     client.send(JSON.stringify({ type: MessageTypes.QUEUE_ADDED }));
     console.log('Client ajouté à la file d’attente');
-  } else if (waitingClients.length >= 1) {
-    // Démarrer la partie entre les deux premiers clients en attente
+  } else {
     const firstClient = waitingClients[0];
 
     firstClient.send(JSON.stringify({ type: MessageTypes.GAME_START }));
