@@ -2,7 +2,7 @@ import { WebSocketServer } from 'ws';
 import { handleQueueJoin } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
-let waitingClient = null;
+const waitingClients = [];
 
 const handlers = {
   [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
@@ -38,18 +38,20 @@ export function setupWebSocket(server) {
     });
 
     ws.on('close', () => {
-      if (waitingClient === ws) {
-        waitingClient = null;
-      }
+      waitingClients = waitingClients.filter((client) => client !== ws);
       console.log('Client déconnecté');
     });
   });
 }
 
-export function getWaitingClient() {
-  return waitingClient;
+export function getWaitingClients() {
+  return waitingClients;
 }
 
-export function setWaitingClient(client) {
-  waitingClient = client;
+export function addWaitingClient(client) {
+  waitingClients.push(client);
+}
+
+export function removeWaitingClient(client) {
+  waitingClients = waitingClients.filter((c) => c !== client);
 }
