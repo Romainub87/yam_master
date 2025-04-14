@@ -18,14 +18,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         const loadUser = async () => {
-            const token = await AsyncStorage.getItem('userToken');
-            if (token) {
-                const decodedToken: {
-                    user: User;
-                    exp: number;
-                    iat: number;
-                } = jwtDecode(token);
-                setUser(decodedToken.user);
+            try {
+                const token = await AsyncStorage.getItem('userToken');
+                if (token) {
+                    const decodedToken: {
+                        user: User;
+                        exp: number;
+                        iat: number;
+                    } = jwtDecode(token);
+                    setUser(decodedToken.user);
+                }
+            } finally {
+                setIsLoading(false);
             }
         };
         loadUser();
