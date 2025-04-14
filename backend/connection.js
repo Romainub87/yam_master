@@ -1,12 +1,12 @@
 const { Pool } = require('pg');
+require('dotenv').config();
 
-// Configuration de la connexion à la base de données
 const pool = new Pool({
-    user: 'postgres', // Remplacez par votre utilisateur PostgreSQL
-    host: 'localhost',         // Adresse de votre serveur PostgreSQL
-    database: 'yam_dev',    // Nom de votre base de données
-    password: 'root', // Mot de passe de l'utilisateur
-    port: 5435,                // Port par défaut de PostgreSQL
+    user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DB,
+    password: process.env.POSTGRES_PASSWORD,
+    port: process.env.POSTGRES_PORT,
 });
 
 // Fonction pour exécuter des requêtes
