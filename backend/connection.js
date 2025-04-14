@@ -1,5 +1,9 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+import pkg from 'pg';
+const { Pool } = pkg;
+import dotenv from 'dotenv';
+
+// Charger .env.local si disponible, sinon .env
+dotenv.config({ path: '.env.local' });
 
 const pool = new Pool({
     user: process.env.POSTGRES_USER,
@@ -9,17 +13,6 @@ const pool = new Pool({
     port: process.env.POSTGRES_PORT,
 });
 
-// Fonction pour exécuter des requêtes
-const query = async (text, params) => {
-    const client = await pool.connect();
-    try {
-        return await client.query(text, params);
-    } catch (err) {
-        console.error('Erreur lors de l\'exécution de la requête', err.stack);
-        throw err;
-    } finally {
-        client.release();
-    }
+export default {
+    query: (text, params) => pool.query(text, params),
 };
-
-module.exports = { query };
