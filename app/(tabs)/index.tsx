@@ -21,9 +21,14 @@ export default function HomeScreen() {
       setMessages((prev) => [...prev, msg]);
 
       console.log('On reçoit un message !: ', msg);
-      if (msg === 'game.start') {
-        console.log('On reçoit game.start !: ', msg);
-        router.push('/game');
+      try {
+        const parsedMsg = JSON.parse(msg);
+        if (parsedMsg.type === 'game.start') {
+          console.log('On reçoit game.start !: ', parsedMsg);
+          router.push('/game');
+        }
+      } catch (error) {
+        console.error('Erreur lors du parsing du message JSON: ', error);
       }
     };
 
