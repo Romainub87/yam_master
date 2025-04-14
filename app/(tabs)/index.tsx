@@ -53,7 +53,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View>
+    <View className="h-full bg-black flex items-center justify-center">
       <Button title="Rejoindre la queue" onPress={joinQueue} />
       {messages.map((msg, index) => (
         <Text key={index}>{msg}</Text>
