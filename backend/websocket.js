@@ -18,7 +18,6 @@ export function setupWebSocket(server) {
       try {
         const data = JSON.parse(messageBuffer.toString());
 
-        console.log('test: ', data);
         const { type, payload } = data;
         const handler = handlers[type];
 
