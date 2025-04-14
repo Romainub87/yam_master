@@ -2,7 +2,7 @@ import { WebSocketServer } from 'ws';
 import { handleQueueJoin } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
-const waitingClients = [];
+let waitingClients = [];
 
 const handlers = {
   [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
