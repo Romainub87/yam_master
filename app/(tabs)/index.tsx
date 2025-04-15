@@ -1,44 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, Button } from 'react-native';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomeScreen() {
-    const [messages, setMessages] = useState<string[]>([]);
-    const [socket, setSocket] = useState<WebSocket | null>(null);
-
-    useEffect(() => {
-        // Connexion au WebSocket
-        const ws = new WebSocket('ws://localhost:3000');
-        setSocket(ws);
-
-        ws.onopen = () => {
-            console.log('Connecté au WebSocket');
-        };
-
-        ws.onmessage = (event) => {
-            setMessages((prev) => [...prev, event.data]);
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket déconnecté');
-        };
-
-        return () => {
-            ws.close();
-        };
-    }, []);
-
-    const sendMessage = () => {
-        if (socket) {
-            socket.send('Hello depuis le client !');
-        }
-    };
+  const { user, logout } = useAuth();
 
     return (
-        <View>
-            <Button title="Envoyer un message" onPress={sendMessage} />
-            {messages.map((msg, index) => (
-                <Text key={index}>{msg}</Text>
-            ))}
+        <View className="flex-1 justify-center items-center bg-gray-900">
+            {user ? (
+                <View className="items-center">
+                    <Text className="text-2xl font-bold text-white mb-4">Bienvenue, {user.username}</Text>
+                    <Button title="Se déconnecter" onPress={logout} color="#4A90E2" />
+                </View>
+            ) : (
+                <Text className="text-lg text-gray-300">Veuillez vous connecter</Text>
+            )}
         </View>
     );
 }

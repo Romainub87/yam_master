@@ -7,9 +7,16 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAuth } from '@/context/AuthContext';
+import { Redirect } from 'expo-router';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { user } = useAuth();
+
+  if (!user) {
+      return <Redirect href="/login" />;
+  }
 
   return (
     <Tabs
