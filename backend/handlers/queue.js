@@ -13,7 +13,6 @@ import { tryMatchPlayers } from '../lib/matchmaking.js';
 export async function handleQueueJoin(client, payload) {
     const waitingClients = getWaitingClients();
 
-    /*
     const { user } = payload;
     // TODO: Use real value ranked
     const ranked = false;
@@ -26,7 +25,6 @@ export async function handleQueueJoin(client, payload) {
         ranked,
         joinedAt: Date.now(),
     };
-     */
 
     if (waitingClients.length === 0) {
         addWaitingClient(clientData);
