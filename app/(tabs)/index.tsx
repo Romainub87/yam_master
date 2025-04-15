@@ -1,72 +1,47 @@
-import React , { useEffect , useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import CustomButton from "@/components/CustomButton";
 import { useRouter } from "expo-router";
+import { useWebSocket } from '@/context/WebSocketContext';
 
 export default function HomeScreen() {
   const { user, userToken, logout } = useAuth();
+  const { sendMessage, lastMessage } = useWebSocket();
   const router = useRouter();
-  const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3000');
-    setSocket(ws);
-
-    ws.onopen = () => {
-      console.log('Connecté au WebSocket');
-    };
-
-    ws.onmessage = (event) => {
-      const msg = event.data;
-
+    if (lastMessage) {
       try {
-        const parsedMsg = JSON.parse(msg);
-        if (parsedMsg.type === 'queue.added') {
+        if (lastMessage.type === 'queue.added') {
           setIsSearching(true);
-        } else if (parsedMsg.type === 'game.start') {
-          router.push(`/game?id=${parsedMsg.game.id}`);
+        } else if (lastMessage.type === 'game.start') {
+          router.push({ pathname: '/game', params: { id: lastMessage.game.id } });
         }
       } catch (error) {
-        console.error('Erreur lors du parsing du message JSON: ', error);
+        console.error('Erreur lors du traitement du message WebSocket :', error);
       }
-    };
-
-    ws.onclose = () => {
-      console.log('WebSocket déconnecté');
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
+    }
+  }, [lastMessage]);
 
   const joinQueue = () => {
-    if (socket) {
-      socket.send(
-          JSON.stringify({
-            type: 'queue.join',
-            payload: {
-                token: userToken,
-            },
-          })
-      );
-    }
+    sendMessage({
+      type: 'queue.join',
+      payload: {
+        token: userToken,
+      },
+    });
   };
 
   const leaveQueue = () => {
-    if (socket) {
-      socket.send(
-          JSON.stringify({
-            type: 'queue.leave',
-            payload: {
-                token: userToken,
-            },
-          })
-      );
-      setIsSearching(false);
-    }
+    sendMessage({
+      type: 'queue.leave',
+      payload: {
+        token: userToken,
+      },
+    });
+    setIsSearching(false);
   };
 
   return (

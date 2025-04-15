@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import DiceRoller from '@/components/game/DiceRoller';
+import { useWebSocket } from '@/context/WebSocketContext';
 
 interface MyInfosProps {
     token: string;
@@ -8,38 +9,31 @@ interface MyInfosProps {
 }
 
 const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
+    const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [diceValues, setDiceValues] = useState<number[]>(Array(5).fill(null));
-    const socket = React.useMemo(() => new WebSocket('ws://localhost:3000'), []);
 
     useEffect(() => {
         setPlayerScore(gameData?.playerScore);
     }, [gameData]);
 
     useEffect(() => {
-        socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (message.type === 'game.rollDices') {
-                setDiceValues(message.dice);
-                setPlayerScore(message.playerScore);
-            }
-        };
-        return () => socket.close();
-    }, [socket]);
+        if (lastMessage && lastMessage.type === 'game.rollDices') {
+            setDiceValues(lastMessage.dice);
+            setPlayerScore(lastMessage.playerScore);
+        }
+    }, [lastMessage]);
 
     const handleRoll = () => {
-        if (socket) {
-            socket.send(
-                JSON.stringify({
-                    type: 'game.rollDices',
-                    payload: {
-                        token,
-                        gameId: gameData.game.id,
-                        count: 5
-                    },
-                })
-            );
-        }
+        console.log(gameData);
+        sendMessage({
+            type: 'game.rollDices',
+            payload: {
+                token,
+                gameId: gameData.game.id,
+                count: 5,
+            },
+        });
     };
 
     return (

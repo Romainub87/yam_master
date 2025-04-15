@@ -24,7 +24,6 @@ export default function DiceRoller({rolls_left, diceValues, onRoll}: {token: str
 
     return (
         <View className="flex flex-col items-center justify-center">
-            <Text className="text-lg mb-5">Tirages restants : {rolls_left}</Text>
             <View className="flex flex-row mb-6">
                 {dice.map((die, index) => (
                     <TouchableOpacity

@@ -8,6 +8,7 @@ import '../global.css';
 import { View } from "react-native";
 import { useColorScheme } from "react-native";
 import { AuthProvider } from "@/context/AuthContext";
+import { WebSocketProvider } from "@/context/WebSocketContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,6 +30,7 @@ export default function RootLayout() {
   }
 
   return (
+      <WebSocketProvider url={"ws://localhost:3000"}>
         <AuthProvider>
           <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
             <Stack>
@@ -40,5 +42,7 @@ export default function RootLayout() {
             <StatusBar style="auto" />
           </View>
         </AuthProvider>
+      </WebSocketProvider>
+
   );
 }
