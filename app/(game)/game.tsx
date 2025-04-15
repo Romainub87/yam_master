@@ -53,7 +53,7 @@ export default function GameScreen() {
     };
 
     return (
-        <View className="flex justify-center items-center h-full">
+        <View className="flex justify-center items-center h-full bg-black">
             <OpponentInfos opponentScore={gameData?.opponentScore || null} />
             <TurnTimer
                 token={userToken!}
