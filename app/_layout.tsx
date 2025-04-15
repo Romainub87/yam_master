@@ -6,8 +6,6 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
 import { View } from "react-native";
-import { ThemeProvider } from "@react-navigation/core";
-import { DarkTheme , DefaultTheme } from "@react-navigation/native";
 import { useColorScheme } from "react-native";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -32,16 +30,15 @@ export default function RootLayout() {
 
   return (
       <AuthProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <View className="flex h-full">
-            <Stack>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="auto" />
-          </View>
-        </ThemeProvider>
+        <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(game)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </View>
       </AuthProvider>
   );
 }

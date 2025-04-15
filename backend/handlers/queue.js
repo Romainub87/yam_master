@@ -5,7 +5,7 @@ import {
 } from '../websocket.js';
 import { MessageTypes } from '../types/message.js';
 
-export function handleQueueJoin(client, payload) {
+export function handleQueueJoin(client) {
   const waitingClients = getWaitingClients();
 
   if (waitingClients.length === 0) {
@@ -24,4 +24,11 @@ export function handleQueueJoin(client, payload) {
     removeWaitingClient(firstClient);
     removeWaitingClient(client);
   }
+}
+
+export function handleQueueLeave(client) {
+    console.log('Client quitté la file d’attente');
+    removeWaitingClient(client);
+    client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
+    console.log('Client retiré de la file d’attente');
 }
