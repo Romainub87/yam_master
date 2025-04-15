@@ -29,16 +29,16 @@ export default function RootLayout() {
   }
 
   return (
-      <AuthProvider>
-        <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(game)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </View>
-      </AuthProvider>
+        <AuthProvider>
+          <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(game)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </View>
+        </AuthProvider>
   );
 }

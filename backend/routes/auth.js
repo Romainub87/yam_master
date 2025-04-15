@@ -45,4 +45,24 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/refresh-token', (req, res) => {
+    const { refreshToken } = req.body;
+
+    // Vérifiez la validité du refresh token
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+        }
+
+        // Générez un nouveau JWT
+        const newToken = jwt.sign(
+            { userId: decoded.userId },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token: newToken });
+    });
+});
+
 export default router;
