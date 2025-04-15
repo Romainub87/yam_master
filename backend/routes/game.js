@@ -16,8 +16,12 @@ router.get('/roll-dice', (req, res) => {
 
     const token = authHeader.split(' ')[1];
 
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
+    let decodedToken;
+    try {
+        decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+        return res.status(401).json({ error: "Token invalide ou expiré." });
+    }
     const user = decodedToken.user;
 
     if (!user) {
