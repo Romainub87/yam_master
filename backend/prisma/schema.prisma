@@ -22,7 +22,6 @@ model users {
   hide_mmr     Int            @default(400)
   player_score player_score[]
   created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
 }
 
 model game {
@@ -36,7 +35,6 @@ model game {
 }
 
 model player_score {
-  id         Int      @id @default(autoincrement())
   game_id    Int
   user_id    Int
   score      Int
@@ -47,4 +45,6 @@ model player_score {
 
   game game  @relation(fields: [game_id], references: [id])
   user users @relation(fields: [user_id], references: [id])
+
+  @@id([game_id, user_id]) // Clé composite
 }

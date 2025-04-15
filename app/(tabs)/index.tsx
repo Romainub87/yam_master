@@ -29,6 +29,7 @@ export default function HomeScreen() {
     sendMessage({
       type: 'queue.join',
       payload: {
+        user: user,
         token: userToken,
       },
     });
