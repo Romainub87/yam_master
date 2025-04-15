@@ -29,7 +29,6 @@ export function tryMatchPlayers(waitingClients) {
       removeWaitingClient(p2);
       i--; // car on a retiré deux éléments
     }
-
-    return waitingClients;
   }
+  return waitingClients;
 }
