@@ -5,7 +5,7 @@ import CustomButton from "@/components/CustomButton";
 import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
-  const { user, logout } = useAuth();
+  const { user, userToken, logout } = useAuth();
   const router = useRouter();
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -26,7 +26,7 @@ export default function HomeScreen() {
         if (parsedMsg.type === 'queue.added') {
           setIsSearching(true);
         } else if (parsedMsg.type === 'game.start') {
-          router.push('/game');
+          router.push(`/game?id=${parsedMsg.game.id}`);
         }
       } catch (error) {
         console.error('Erreur lors du parsing du message JSON: ', error);
@@ -47,7 +47,9 @@ export default function HomeScreen() {
       socket.send(
           JSON.stringify({
             type: 'queue.join',
-            payload: {},
+            payload: {
+                token: userToken,
+            },
           })
       );
     }
@@ -58,7 +60,9 @@ export default function HomeScreen() {
       socket.send(
           JSON.stringify({
             type: 'queue.leave',
-            payload: {},
+            payload: {
+                token: userToken,
+            },
           })
       );
       setIsSearching(false);

@@ -1,12 +1,15 @@
 import { WebSocketServer } from 'ws';
-import {handleQueueJoin, handleQueueLeave} from './handlers/queue.js';
+import {handleGameSubscribe, handleQueueJoin, handleQueueLeave, handleRollDices} from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
+let gameClients = [];
 
 const handlers = {
-  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws),
+  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
+  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) => handleGameSubscribe(ws, payload),
+  [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -55,4 +58,16 @@ export function addWaitingClient(client) {
 
 export function removeWaitingClient(client) {
   waitingClients = waitingClients.filter((c) => c !== client);
+}
+
+export function getGameClients() {
+  return gameClients;
+}
+
+export function addGameClient(client) {
+  gameClients.push(client);
+}
+
+export function removeGameClient(client) {
+  gameClients = gameClients.filter((c) => c !== client);
 }
