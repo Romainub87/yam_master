@@ -28,7 +28,7 @@ export default function RegisterScreen() {
                 }
 
                 const { token } = await response.json();
-                await login(token);
+                await login(token, 'refreshToken');
                 router.push('/');
             } catch (err: any) {
                 setError(err.message || 'Une erreur est survenue lors de l\'inscription.');

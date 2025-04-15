@@ -21,7 +21,7 @@ export default function LoginScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                await login(data.token);
+                await login(data.token, 'refreshToken');
             } else {
                 alert('Identifiants incorrects');
             }

@@ -57,7 +57,7 @@ export function addWaitingClient(client) {
 }
 
 export function removeWaitingClient(client) {
-  waitingClients = waitingClients.filter((c) => c !== client);
+  waitingClients = waitingClients.filter((c) => c.client !== client);
 }
 
 export function getGameClients() {

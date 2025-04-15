@@ -13,7 +13,7 @@ export async function handleQueueJoin(client, payload) {
     const waitingClients = getWaitingClients();
 
     if (waitingClients.length === 0) {
-        addWaitingClient({client: client, payload: payload});
+        addWaitingClient({ client, payload });
         client.send(JSON.stringify({type: MessageTypes.QUEUE_ADDED}));
     } else {
         const firstClient = waitingClients[0];
@@ -67,11 +67,11 @@ export async function handleQueueJoin(client, payload) {
         firstClient.client.send(JSON.stringify({type: MessageTypes.GAME_START, game: game, playerScore: opponentScore, opponentScore: playerScore}));
         client.send(JSON.stringify({type: MessageTypes.GAME_START, game: game, playerScore: playerScore, opponentScore: opponentScore}));
 
-        removeWaitingClient(firstClient);
-        removeWaitingClient(client);
+        removeWaitingClient({client: firstClient.client, payload: firstClient.payload});
+        removeWaitingClient({client: client, payload: payload});
 
-        addGameClient({firstClient, gameId: gameId, userId: opponentId});
-        addGameClient({client, gameId: gameId, userId: clientId});
+        addGameClient({client: firstClient, gameId: gameId, userId: opponentId});
+        addGameClient({client: client, gameId: gameId, userId: clientId});
     }
 }
 
@@ -125,10 +125,8 @@ export async function handleGameSubscribe(client, payload) {
 }
 
 export function handleQueueLeave(client) {
-    console.log('Client quitté la file d’attente');
     removeWaitingClient(client);
     client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
-    console.log('Client retiré de la file d’attente');
 }
 
 export async function handleRollDices(client, payload) {
@@ -200,13 +198,15 @@ export async function handleRollDices(client, payload) {
         playerScore: playerScore,
     }));
 
-    const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id)?.client;
-    if (opponentClient) {
-        opponentClient.send(JSON.stringify({
-            type: MessageTypes.OPPONENT_UPDATE,
-            dice: diceRolls,
-            opponentScore: playerScore,
-        }));
+    if (opponentScore) {
+        const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id)?.client;
+        if (opponentClient) {
+            opponentClient.send(JSON.stringify({
+                type: MessageTypes.OPPONENT_UPDATE,
+                dice: diceRolls,
+                opponentScore: playerScore,
+            }));
+        }
     }
 
 }
