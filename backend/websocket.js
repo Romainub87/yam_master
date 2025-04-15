@@ -1,5 +1,11 @@
 import { WebSocketServer } from 'ws';
-import {handleGameSubscribe, handleQueueJoin, handleQueueLeave, handleRollDices} from './handlers/queue.js';
+import {
+  handleGameSubscribe,
+  handleQueueJoin,
+  handleQueueLeave,
+  handleRollDices,
+  handleTurnChange
+} from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
@@ -10,6 +16,7 @@ const handlers = {
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
   [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) => handleGameSubscribe(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
+  [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -42,7 +49,8 @@ export function setupWebSocket(server) {
     });
 
     ws.on('close', () => {
-      waitingClients = waitingClients.filter((client) => client !== ws);
+      gameClients = gameClients.filter((client) => client.client !== ws);
+      waitingClients = waitingClients.filter((client) => client.client !== ws);
       console.log('Client déconnecté');
     });
   });
@@ -71,5 +79,5 @@ export function addGameClient(client) {
 }
 
 export function removeGameClient(client) {
-  gameClients = gameClients.filter((c) => c !== client);
+  gameClients = gameClients.filter((c) => c.client !== client);
 }

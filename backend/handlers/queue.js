@@ -87,9 +87,14 @@ export async function handleQueueJoin(client, payload) {
         removeWaitingClient({client: firstClient.client, payload: firstClient.payload});
         removeWaitingClient({client: client, payload: payload});
 
-        addGameClient({client: firstClient, gameId: gameId, userId: opponentId});
+        addGameClient({client: firstClient.client, gameId: gameId, userId: opponentId});
         addGameClient({client: client, gameId: gameId, userId: clientId});
     }
+}
+
+export function handleQueueLeave(client) {
+    removeWaitingClient(client);
+    client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
 }
 
 export async function handleGameSubscribe(client, payload) {
@@ -141,11 +146,6 @@ export async function handleGameSubscribe(client, payload) {
     }
 }
 
-export function handleQueueLeave(client) {
-    removeWaitingClient(client);
-    client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
-}
-
 export async function handleRollDices(client, payload) {
     const gameId = payload.gameId;
     const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
@@ -192,12 +192,20 @@ export async function handleRollDices(client, payload) {
         [gameId, userId]
     );
 
+    const playerRollsResult = await db.query(
+        'SELECT * FROM player_score WHERE game_id = $1 AND user_id = $2',
+        [gameId, userId]
+    );
+
+    const playerScoreUpdated = playerRollsResult.rows[0];
+
     // Vérifier les combinaisons possibles
     const counts = diceRolls.reduce((acc, value) => {
         acc[value] = (acc[value] || 0) + 1;
         return acc;
     }, {});
 
+    // TODO: Vérifier les combinaisons possibles + implémentation des combinaisons/actions
     const combinations = {
         pair: Object.values(counts).some(count => count === 2),
         threeOfAKind: Object.values(counts).some(count => count === 3),
@@ -211,19 +219,78 @@ export async function handleRollDices(client, payload) {
     client.send(JSON.stringify({
         type: MessageTypes.DICE_ROLL,
         dice: diceRolls,
+        game: gameResult.rows[0],
         combinations: combinations,
-        playerScore: playerScore,
+        playerScore: playerScoreUpdated,
     }));
 
     if (opponentScore) {
-        const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id)?.client;
+        const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id);
         if (opponentClient) {
-            opponentClient.send(JSON.stringify({
+            opponentClient.client.send(JSON.stringify({
                 type: MessageTypes.OPPONENT_UPDATE,
                 dice: diceRolls,
-                opponentScore: playerScore,
+                game: gameResult.rows[0],
+                opponentScore: playerScoreUpdated,
             }));
         }
     }
+}
 
+export async function handleTurnChange(client, payload) {
+    const gameId = payload.gameId;
+
+    const gameResult = await db.query(
+        'SELECT * FROM game WHERE id = $1',
+        [gameId]
+    );
+
+    try {
+        // Récupérer les scores des joueurs pour la partie
+        const playerScoresResult = await db.query(
+            'SELECT * FROM player_score WHERE game_id = $1',
+            [gameId]
+        );
+
+        const playerScores = playerScoresResult.rows;
+
+        if (playerScores.length !== 2) {
+            client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Nombre de joueurs incorrect' }));
+            return;
+        }
+
+        // Inverser les tours
+        const updates = playerScores.map(player => {
+            return db.query(
+                'UPDATE player_score SET turn = $1, rolls_left = $2 WHERE game_id = $3 AND user_id = $4',
+                [!player.turn, !player.turn ? 3 : 0, gameId, player.user_id]
+            );
+        });
+
+        await Promise.all(updates);
+
+        // Notifier les clients
+        const updatedScoresResult = await db.query(
+            'SELECT * FROM player_score WHERE game_id = $1',
+            [gameId]
+        );
+
+        const updatedScores = updatedScoresResult.rows;
+
+        updatedScores.forEach(player => {
+            const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === player.user_id);
+            if (gameClient) {
+                gameClient.client.send(JSON.stringify({
+                    type: MessageTypes.GAME_UPDATE,
+                    opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
+                    playerScore: player,
+                    game: gameResult.rows[0],
+                    dice: [],
+                }));
+            }
+        });
+    } catch (error) {
+        console.error('Erreur dans handleTurnChange :', error);
+        client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Erreur lors du changement de tour' }));
+    }
 }

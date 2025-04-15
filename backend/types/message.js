@@ -8,5 +8,5 @@ export const MessageTypes = {
   GAME_ERROR: 'game.error',
   DICE_ROLL: 'game.rollDices',
   OPPONENT_UPDATE: 'opponent.update',
-  CHAT_MESSAGE: 'chat.message',
+  TURN_CHANGE: 'game.turnChange',
 };
