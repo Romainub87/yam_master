@@ -31,7 +31,6 @@ export default function GameScreen() {
         ws.onmessage = (event) => {
             try {
                 const parsedMsg = JSON.parse(event.data);
-                console.log(parsedMsg);
                 if (
                     parsedMsg.type === 'game.update' ||
                     parsedMsg.type === 'game.start'
@@ -41,7 +40,6 @@ export default function GameScreen() {
                     parsedMsg.type === 'opponent.update'
                 ) {
                     setGameData((prev) => ({ ...prev, opponentScore: parsedMsg.payload?.opponentScore || null }));
-                    console.log(gameData);
                 }
             } catch (error) {
                 console.error('Erreur lors du parsing du message JSON :', error);
