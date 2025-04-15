@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output = "../node_modules/.prisma/client"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -15,9 +15,36 @@ datasource db {
 }
 
 model users {
-  id       Int     @id @default(autoincrement())
-  username String  @unique
-  password String
-  mmr      Int?
-  hide_mmr Int     @default(400)
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  password     String
+  mmr          Int?
+  hide_mmr     Int            @default(400)
+  player_score player_score[]
+  created_at   DateTime       @default(now())
+}
+
+model game {
+  id            Int            @id @default(autoincrement())
+  grid_state    Json
+  dice_state    Json
+  timer         Int
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  player_scores player_score[]
+}
+
+model player_score {
+  game_id    Int
+  user_id    Int
+  score      Int
+  turn       Boolean
+  rolls_left Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  game game  @relation(fields: [game_id], references: [id])
+  user users @relation(fields: [user_id], references: [id])
+
+  @@id([game_id, user_id]) // Clé composite
 }

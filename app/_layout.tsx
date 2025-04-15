@@ -8,6 +8,7 @@ import '../global.css';
 import { View } from "react-native";
 import { useColorScheme } from "react-native";
 import { AuthProvider } from "@/context/AuthContext";
+import { WebSocketProvider } from "@/context/WebSocketContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,16 +30,19 @@ export default function RootLayout() {
   }
 
   return (
-      <AuthProvider>
-        <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(game)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </View>
-      </AuthProvider>
+      <WebSocketProvider url={"ws://localhost:3000"}>
+        <AuthProvider>
+          <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(game)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </View>
+        </AuthProvider>
+      </WebSocketProvider>
+
   );
 }

@@ -31,7 +31,7 @@ export default function GameGrid({ rows, columns, onCellPress }: GridProps) {
     return (
         <View className="flex flex-col items-center justify-center h-1/2">
             {Array.from({ length: rows }).map((_, rowIndex) => (
-                <View key={rowIndex} className="flex flex-row">
+                <View key={rowIndex} className="flex flex-row bg-white">
                     {Array.from({ length: columns }).map((_, colIndex) => (
                         <TouchableOpacity
                             key={colIndex}
