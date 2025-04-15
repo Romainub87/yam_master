@@ -4,7 +4,7 @@ import { useWebSocket } from '@/context/WebSocketContext';
 
 interface TimerProps {
     token: string;
-    gameId: string;
+    gameId: number;
     rollsLeft: number;
     isCurrentTurn: boolean;
 }
@@ -15,7 +15,7 @@ const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTu
 
     useEffect(() => {
         if (!isCurrentTurn || rollsLeft === 0) {
-            setTimeLeft(20); // Réinitialiser le timer si ce n'est pas le tour du joueur
+            setTimeLeft(20);
             return;
         }
 
@@ -42,9 +42,9 @@ const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTu
     return (
         <View>
             {isCurrentTurn && rollsLeft > 0 ? (
-                <Text className="text-black">Temps restant : {timeLeft}s</Text>
+                <Text className="text-white">Temps restant : {timeLeft}s</Text>
             ) : (
-                <Text className="text-black">En attente du tour...</Text>
+                <Text className="text-white">En attente du tour...</Text>
             )}
         </View>
     );
