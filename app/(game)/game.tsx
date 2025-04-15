@@ -5,10 +5,11 @@ import {useAuth} from "@/context/AuthContext";
 import {useLocalSearchParams} from "expo-router/build/hooks";
 import OpponentInfos from "@/components/game/OpponentInfos";
 import MyInfos from "@/components/game/MyInfos";
+import {GameData} from "@/models/GameData";
 
 export default function GameScreen() {
     const {userToken} = useAuth();
-    const [gameData, setGameData] = useState(null);
+    const [gameData, setGameData] = useState<GameData>({} as GameData);
     const params = useLocalSearchParams();
 
     useEffect(() => {

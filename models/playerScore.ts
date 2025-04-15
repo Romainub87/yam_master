@@ -2,7 +2,9 @@ export interface PlayerScore {
     id: number;
     user_id: number;
     game_id: number;
+    rolls_left: number;
     score: number;
-    createdAt: string;
-    updatedAt: string;
+    turn: boolean;
+    created_at: string;
+    updated_at: string;
 }
