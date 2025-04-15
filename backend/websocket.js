@@ -4,7 +4,7 @@ import {
   handleQueueJoin,
   handleQueueLeave,
   handleRollDices,
-  handleTurnChange
+  handleTurnChange,
 } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
@@ -14,7 +14,8 @@ let gameClients = [];
 const handlers = {
   [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
-  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) => handleGameSubscribe(ws, payload),
+  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) =>
+    handleGameSubscribe(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
 };
