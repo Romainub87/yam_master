@@ -39,7 +39,7 @@ export default function GameScreen() {
                 } else if (
                     parsedMsg.type === 'opponent.update'
                 ) {
-                    setGameData((prev) => ({ ...prev, opponentScore: parsedMsg.payload?.opponentScore || null }));
+                    setGameData((prev) => ({ ...prev, opponentScore: parsedMsg.opponentScore || null }));
                 }
             } catch (error) {
                 console.error('Erreur lors du parsing du message JSON :', error);
