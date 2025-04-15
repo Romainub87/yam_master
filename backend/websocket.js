@@ -1,11 +1,12 @@
 import { WebSocketServer } from 'ws';
-import { handleQueueJoin } from './handlers/queue.js';
+import {handleQueueJoin, handleQueueLeave} from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
 
 const handlers = {
-  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
+  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws),
+  [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
 };
 
 export function setupWebSocket(server) {

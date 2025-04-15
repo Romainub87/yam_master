@@ -1,18 +1,15 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
-
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/context/AuthContext';
 import { Redirect } from 'expo-router';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const { user } = useAuth();
+    const { user } = useAuth();
 
   if (!user) {
       return <Redirect href="/login" />;
@@ -21,7 +18,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors.dark.tabIconSelected,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -29,21 +26,29 @@ export default function TabLayout() {
           ios: {
             position: 'absolute',
           },
-          default: {},
+          default: {
+            backgroundColor: Colors.dark,
+            borderTopWidth: 0,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 70,
+          },
         }),
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Accueil',
+          tabBarIcon: ({ color }) => <FontAwesome name="home" size={30} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="rules"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Règles',
+          tabBarIcon: ({ color }) => <FontAwesome name="question-circle" size={30} color={color} />,
         }}
       />
     </Tabs>
