@@ -29,7 +29,7 @@ export default function HomeScreen() {
     sendMessage({
       type: 'queue.join',
       payload: {
-        user: user,
+        token: userToken,
       },
     });
   };
@@ -45,29 +45,23 @@ export default function HomeScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center dark:bg-black">
-      {user ? (
-        <View className="items-center p-6 rounded-lg shadow-lg">
-          <Text className="text-4xl text-white mb-6 font-bold">
-            Bienvenue, {user.username} 👋
-          </Text>
-          {isSearching ? (
-            <View className="items-center">
-              <Text className="text-lg text-gray-300 mb-4">
-                🔍 Recherche de parties en cours...
-              </Text>
-              <CustomButton title="Annuler" onPress={() => leaveQueue()} />
+      <View className="flex-1 justify-center items-center dark:bg-black">
+        {user ? (
+            <View className="items-center p-6 rounded-lg shadow-lg">
+              <Text className="text-4xl text-white mb-6 font-bold">Bienvenue, {user.username} 👋</Text>
+              {isSearching ? (
+                  <View className="items-center">
+                    <Text className="text-lg text-gray-300 mb-4">🔍 Recherche de parties en cours...</Text>
+                    <CustomButton title="Annuler" onPress={() => leaveQueue()} />
+                  </View>
+              ) : (
+                  <CustomButton title="Jouer" onPress={() => joinQueue()} />
+              )}
+              <CustomButton title="Se déconnecter" onPress={logout} />
             </View>
-          ) : (
-            <CustomButton title="Jouer" onPress={() => joinQueue()} />
-          )}
-          <CustomButton title="Se déconnecter" onPress={logout} />
-        </View>
-      ) : (
-        <Text className="text-lg text-gray-300">
-          Veuillez vous connecter pour continuer
-        </Text>
-      )}
-    </View>
+        ) : (
+            <Text className="text-lg text-gray-300">Veuillez vous connecter pour continuer</Text>
+        )}
+      </View>
   );
 }

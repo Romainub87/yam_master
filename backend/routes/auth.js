@@ -57,7 +57,7 @@ router.post('/refresh-token', (req, res) => {
 
         // Générez un nouveau JWT
         const newToken = jwt.sign(
-            { userId: decoded.userId },
+            { user: decoded.user },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
