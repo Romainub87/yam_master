@@ -1,8 +1,8 @@
-import React , { useEffect , useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
-import CustomButton from "@/components/CustomButton";
-import { useRouter } from "expo-router";
+import CustomButton from '@/components/CustomButton';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
@@ -45,10 +45,12 @@ export default function HomeScreen() {
   const joinQueue = () => {
     if (socket) {
       socket.send(
-          JSON.stringify({
-            type: 'queue.join',
-            payload: {},
-          })
+        JSON.stringify({
+          type: 'queue.join',
+          payload: {
+            user: user,
+          },
+        })
       );
     }
   };
@@ -56,33 +58,39 @@ export default function HomeScreen() {
   const leaveQueue = () => {
     if (socket) {
       socket.send(
-          JSON.stringify({
-            type: 'queue.leave',
-            payload: {},
-          })
+        JSON.stringify({
+          type: 'queue.leave',
+          payload: {},
+        })
       );
       setIsSearching(false);
     }
   };
 
   return (
-      <View className="flex-1 justify-center items-center dark:bg-black">
-        {user ? (
-            <View className="items-center p-6 rounded-lg shadow-lg">
-              <Text className="text-4xl text-white mb-6 font-bold">Bienvenue, {user.username} 👋</Text>
-              {isSearching ? (
-                  <View className="items-center">
-                    <Text className="text-lg text-gray-300 mb-4">🔍 Recherche de parties en cours...</Text>
-                    <CustomButton title="Annuler" onPress={() => leaveQueue()} />
-                  </View>
-              ) : (
-                  <CustomButton title="Jouer" onPress={() => joinQueue()} />
-              )}
-              <CustomButton title="Se déconnecter" onPress={logout} />
+    <View className="flex-1 justify-center items-center dark:bg-black">
+      {user ? (
+        <View className="items-center p-6 rounded-lg shadow-lg">
+          <Text className="text-4xl text-white mb-6 font-bold">
+            Bienvenue, {user.username} 👋
+          </Text>
+          {isSearching ? (
+            <View className="items-center">
+              <Text className="text-lg text-gray-300 mb-4">
+                🔍 Recherche de parties en cours...
+              </Text>
+              <CustomButton title="Annuler" onPress={() => leaveQueue()} />
             </View>
-        ) : (
-            <Text className="text-lg text-gray-300">Veuillez vous connecter pour continuer</Text>
-        )}
-      </View>
+          ) : (
+            <CustomButton title="Jouer" onPress={() => joinQueue()} />
+          )}
+          <CustomButton title="Se déconnecter" onPress={logout} />
+        </View>
+      ) : (
+        <Text className="text-lg text-gray-300">
+          Veuillez vous connecter pour continuer
+        </Text>
+      )}
+    </View>
   );
 }

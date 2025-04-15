@@ -1,11 +1,11 @@
 import { WebSocketServer } from 'ws';
-import {handleQueueJoin, handleQueueLeave} from './handlers/queue.js';
+import { handleQueueJoin, handleQueueLeave } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
 
 const handlers = {
-  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws),
+  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
 };
 
@@ -49,10 +49,12 @@ export function getWaitingClients() {
   return waitingClients;
 }
 
-export function addWaitingClient(client) {
-  waitingClients.push(client);
+export function addWaitingClient(clientData) {
+  waitingClients.push(clientData);
 }
 
-export function removeWaitingClient(client) {
-  waitingClients = waitingClients.filter((c) => c !== client);
+export function removeWaitingClient(clientToRemove) {
+  waitingClients = waitingClients.filter(
+    (c) => c.client !== clientToRemove && c !== clientToRemove
+  );
 }
