@@ -22,7 +22,6 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
             if (message.type === 'game.rollDices') {
                 setDiceValues(message.dice);
                 setPlayerScore(message.playerScore);
-                console.log(playerScore);
             }
         };
         return () => socket.close();

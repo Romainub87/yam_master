@@ -153,8 +153,6 @@ export async function handleRollDices(client, payload) {
     const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
     const userId = decodedToken.user.id;
 
-    console.log(userId);
-
     const playerScoresResult = await db.query(
         'SELECT * FROM player_score WHERE game_id = $1',
         [gameId]
@@ -219,9 +217,7 @@ export async function handleRollDices(client, payload) {
         playerScore: playerScore,
     }));
 
-    console.log(getGameClients());
     const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id)?.client;
-    console.log(opponentClient);
     if (opponentClient) {
         opponentClient.send(JSON.stringify({
             type: MessageTypes.OPPONENT_UPDATE,
