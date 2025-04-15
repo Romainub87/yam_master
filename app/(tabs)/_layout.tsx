@@ -47,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rules"
         options={{
-          title: 'Régles',
+          title: 'Règles',
           tabBarIcon: ({ color }) => <FontAwesome name="question-circle" size={30} color={color} />,
         }}
       />
