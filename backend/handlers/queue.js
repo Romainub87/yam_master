@@ -22,6 +22,7 @@ export async function handleQueueJoin(client, payload) {
         const opponentClient = getGameClients().find(
             (gameClient) => suspendedClient.gameId && gameClient.userId !== user.id
         );
+        console.log("Opponent client", opponentClient);
         if (opponentClient) {
             opponentClient.client.send(JSON.stringify({ type: MessageTypes.OPPONENT_RECONNECT, message: "L'adversaire s'est reconnecté." }));
         }

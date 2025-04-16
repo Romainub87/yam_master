@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws';
 import {
-  handleDefinitiveQuitGame,
+  handleDefinitiveQuitGame, handleForfeit,
   handleGameSubscribe,
   handleQuitGame,
   handleRollDices,
@@ -26,6 +26,7 @@ const handlers = {
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
   [MessageTypes.QUIT_GAME]: (ws, payload) => handleQuitGame(ws, payload),
   [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),
+  [MessageTypes.FORFEIT_GAME]: (ws, payload) => handleForfeit(ws, payload),
 };
 
 export function setupWebSocket(server) {

@@ -4,6 +4,7 @@ import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';
 import {router} from "expo-router";
+import ForfeitButton from "@/components/game/ForfeitButton";
 
 interface MyInfosProps {
     token: string;
@@ -16,13 +17,14 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [diceValues, setDiceValues] = useState<number[]>(Array(5).fill(null));
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
+    const [isOpponentFF, setIsOpponentFF] = useState(false);
     const [timer, setTimer] = useState<number | null>(null);
 
     const handleQuitGame = () => {
         sendMessage({
             type: 'game.quit',
             payload: {
-                userId: user.id,
+                userId: user!.id,
                 gameId: gameData.game.id,
             },
         });
@@ -32,7 +34,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
         sendMessage({
             type: 'game.definitiveQuit',
             payload: {
-                userId: user.id,
+                userId: user!.id,
                 gameId: gameData.game.id,
             },
         });
@@ -47,12 +49,20 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
             if (lastMessage.type === 'game.definitiveQuit') {
                 router.push('/');
                 setIsOpponentQuit(false);
+                setIsOpponentFF(false);
             }
             if (lastMessage.type === 'game.quit') {
                 router.push('/');
             }
             if (lastMessage.type === 'opponent.reconnect') {
                 setIsOpponentQuit(false);
+            }
+            if (lastMessage.type === 'player.ff') {
+                router.push('/');
+            }
+            if (lastMessage.type === 'opponent.ff') {
+                setIsOpponentFF(true);
+                setTimer(5);
             }
         }
     }, [lastMessage]);
@@ -69,7 +79,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     }, [lastMessage]);
 
     useEffect(() => {
-        if (isOpponentQuit && timer !== null) {
+        if ((isOpponentQuit || isOpponentFF) && timer !== null) {
             const interval = setInterval(() => {
                 setTimer((prev) => (prev !== null && prev > 0 ? prev - 1 : null));
             }, 1000);
@@ -80,7 +90,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
 
             return () => clearInterval(interval);
         }
-    }, [isOpponentQuit, timer]);
+    }, [isOpponentQuit, isOpponentFF, timer]);
 
     const handleRoll = () => {
         sendMessage({
@@ -94,7 +104,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     };
 
     return (
-        <View className="p-4 bg-gray-800 rounded-lg">
+        <View className="p-4 bg-gray-800 w-full">
             <Text className="text-white text-lg font-bold">Mes Infos</Text>
             {playerScore ? (
                 <>
@@ -104,7 +114,10 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
                         {playerScore.turn ? 'Tour actuel : Oui' : 'Tour actuel : Non'}
                     </Text>
                     <DiceRoller token={token} rolls_left={playerScore.rolls_left} diceValues={diceValues} onRoll={handleRoll} />
-                    <Button title="Quitter la partie" onPress={handleQuitGame} />
+                    <View className="my-2 flex-row justify-between w-full">
+                        <ForfeitButton gameId={gameData?.game?.id} />
+                        <Button title="Quitter la partie" onPress={handleQuitGame} />
+                    </View>
                 </>
             ) : (
                 <Text className="text-gray-300">Aucune donnée disponible</Text>
@@ -117,6 +130,22 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
                     <View className="flex-1 justify-center items-center bg-black/50">
                         <View className="bg-white p-6 rounded-lg">
                             <Text className="text-black">Votre adversaire a quitté la partie.</Text>
+                            {timer !== null && (
+                                <Text className="text-black">Vous serez déconnecté dans {timer} secondes.</Text>
+                            )}
+                        </View>
+                    </View>
+                    <View className="absolute inset-0 blur-md" />
+                </Modal>
+            )}
+            {isOpponentFF && (
+                <Modal
+                    transparent={true}
+                    animationType="slide"
+                >
+                    <View className="flex-1 justify-center items-center bg-black/50">
+                        <View className="bg-white p-6 rounded-lg">
+                            <Text className="text-black">Votre adversaire a abandonné la partie.</Text>
                             {timer !== null && (
                                 <Text className="text-black">Vous serez déconnecté dans {timer} secondes.</Text>
                             )}

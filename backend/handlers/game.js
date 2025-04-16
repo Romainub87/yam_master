@@ -256,3 +256,21 @@ export async function handleDefinitiveQuitGame(client, payload) {
     }));
   }
 }
+
+export async function handleForfeit(client, payload) {
+  console.log(payload);
+    const gameClients = getGameClients().filter(c => c.gameId === payload.gameId && c.userId !== payload.userId);
+    gameClients.forEach(gameClient => {
+        gameClient.client.send(JSON.stringify({
+          type: MessageTypes.OPPONENT_FORFEIT,
+          message: `L'adversaire a abandonné.`,
+        }));
+    });
+
+    client.send(JSON.stringify({
+        type: MessageTypes.PLAYER_FORFEIT,
+        message: 'Vous avez abandonné la partie.',
+    }));
+
+    removeGameClient(client);
+}

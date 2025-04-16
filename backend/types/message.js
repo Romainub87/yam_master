@@ -14,4 +14,8 @@ export const MessageTypes = {
   PLAYER_QUIT_GAME: 'player.quitGame',
   OPPONENT_RECONNECT: 'opponent.reconnect',
   GAME_RECONNECT: 'game.reconnect',
+  PLAYER_FORFEIT: 'player.ff',
+  FORFEIT_GAME: 'game.ff',
+  OPPONENT_FORFEIT: 'opponent.ff',
+
 };
