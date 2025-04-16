@@ -7,69 +7,83 @@ const router = express.Router();
 
 // Inscription
 router.post('/register', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    const { username, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        const existingUser = await db.users.findUnique({
-            where: { username },
-        });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
-        }
-
-        const newUser = await db.users.create({
-            data: {
-                username,
-                password: hashedPassword,
-            },
-        });
-
-        const token = jwt.sign({ user: newUser }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(201).json({token});
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+    const existingUser = await db.users.findUnique({
+      where: { username },
+    });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username already exists' });
     }
+
+    const newUser = await db.users.create({
+      data: {
+        username,
+        password: hashedPassword,
+      },
+    });
+
+    const token = jwt.sign({ user: newUser }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+    const refreshToken = jwt.sign(
+      { user: newUser },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: '7d',
+      }
+    );
+
+    res.status(201).json({ token, refreshToken });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Connexion
 router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await db.users.findUnique({
-            where: { username },
-        });
+  try {
+    const { username, password } = req.body;
+    const user = await db.users.findUnique({
+      where: { username },
+    });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        const token = jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+    const refreshToken = jwt.sign({ user }, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: '7d',
+    });
+    res.json({ token, refreshToken });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.post('/refresh-token', (req, res) => {
-    const { refreshToken } = req.body;
+  const { refreshToken } = req.body;
 
-    // Vérifiez la validité du refresh token
-    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
-        }
+  // Vérifiez la validité du refresh token
+  jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
+    if (err) {
+      return res
+        .status(401)
+        .json({ message: 'Refresh token invalide ou expiré' });
+    }
 
-        // Générez un nouveau JWT
-        const newToken = jwt.sign(
-            { user: decoded.user },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        res.json({ token: newToken });
+    // Générez un nouveau JWT
+    const newToken = jwt.sign({ user: decoded.user }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
     });
+
+    res.json({ token: newToken });
+  });
 });
 
 export default router;
