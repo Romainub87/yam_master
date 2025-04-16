@@ -153,6 +153,10 @@ export async function handleRollDices(client, payload) {
 export async function handleTurnChange(client, payload) {
   const gameId = payload.gameId;
 
+  const game = await db.game.findUnique({
+    where: { id: gameId },
+  });
+
   if (getGameClients().filter(c => c.gameId === gameId).length < 2) {
     client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Pas assez de joueurs dans la partie' }));
     return;
@@ -200,7 +204,7 @@ export async function handleTurnChange(client, payload) {
           type: MessageTypes.GAME_UPDATE,
           opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
           playerScore: player,
-          game: { id: gameId }, // Inclure les données nécessaires de la partie
+          game: game, // Inclure les données nécessaires de la partie
           dice: [],
         }));
       }

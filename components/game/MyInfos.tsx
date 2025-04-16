@@ -5,7 +5,6 @@ import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';
 import {router} from "expo-router";
 import ForfeitButton from "@/components/game/ForfeitButton";
-import useDetectWindowClose from "@/hooks/useDetectWindowClose";
 
 interface MyInfosProps {
     token: string;
@@ -14,7 +13,6 @@ interface MyInfosProps {
 
 const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     const { user } = useAuth();
-    useDetectWindowClose(gameData?.game?.id);
     const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [diceValues, setDiceValues] = useState<number[]>(Array(5).fill(null));
