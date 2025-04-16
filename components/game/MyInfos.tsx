@@ -5,6 +5,7 @@ import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';
 import {router} from "expo-router";
 import ForfeitButton from "@/components/game/ForfeitButton";
+import { Dice } from "@/models/Dice";
 
 interface MyInfosProps {
     token: string;
@@ -15,20 +16,10 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     const { user } = useAuth();
     const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
-    const [diceValues, setDiceValues] = useState<number[]>(Array(5).fill(null));
+    const [diceValues, setDiceValues] = useState<Dice[]>(Array(5).fill({ value: null, locked: false }));
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
     const [isOpponentFF, setIsOpponentFF] = useState(false);
     const [timer, setTimer] = useState<number | null>(null);
-
-    const handleQuitGame = () => {
-        sendMessage({
-            type: 'game.quit',
-            payload: {
-                userId: user!.id,
-                gameId: gameData.game.id,
-            },
-        });
-    };
 
     const handleDefinitiveQuitGame = () => {
         sendMessage({
@@ -50,9 +41,6 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
                 router.push('/');
                 setIsOpponentQuit(false);
                 setIsOpponentFF(false);
-            }
-            if (lastMessage.type === 'game.quit') {
-                router.push('/');
             }
             if (lastMessage.type === 'opponent.reconnect') {
                 setIsOpponentQuit(false);
@@ -92,16 +80,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
         }
     }, [isOpponentQuit, isOpponentFF, timer]);
 
-    const handleRoll = () => {
-        sendMessage({
-            type: 'game.rollDices',
-            payload: {
-                userId: user?.id,
-                gameId: gameData.game.id,
-                count: 5,
-            },
-        });
-    };
+
 
     return (
         <View className="p-4 bg-gray-800 w-full">
@@ -109,11 +88,13 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
             {playerScore ? (
                 <>
                     <Text className="text-gray-300">Score : {playerScore.score}</Text>
-                    <Text className="text-gray-300">Lancers restants : {playerScore.rolls_left}</Text>
-                    <Text className="text-gray-300">
-                        {playerScore.turn ? 'Tour actuel : Oui' : 'Tour actuel : Non'}
-                    </Text>
-                    <DiceRoller token={token} rolls_left={playerScore.rolls_left} diceValues={diceValues} onRoll={handleRoll} />
+                    {playerScore.turn && (
+                        <>
+                            <Text className="text-gray-300">Lancers restants : {playerScore.rolls_left}</Text>
+                            <Text className="text-gray-300">Tour actuel : Oui</Text>
+                            <DiceRoller rolls_left={playerScore.rolls_left} diceValues={diceValues} gameId={gameData?.game?.id} />
+                        </>
+                    )}
                     <View className="my-2 flex-row justify-between w-full">
                         <ForfeitButton gameId={gameData?.game?.id} />
                     </View>

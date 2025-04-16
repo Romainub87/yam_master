@@ -39,6 +39,7 @@ export default function GameScreen() {
                 if (lastMessage.type === 'opponent.update') {
                     setGameData((prev) => ({
                         ...prev,
+                        dice: lastMessage.dice,
                         opponentScore: lastMessage.opponentScore || null,
                     }));
                 }
@@ -54,7 +55,7 @@ export default function GameScreen() {
 
     return (
         <View className="flex justify-center items-center h-full bg-black">
-            <OpponentInfos opponentScore={gameData?.opponentScore || null} />
+            <OpponentInfos gameData={gameData} />
             <TurnTimer
                 token={userToken!}
                 gameId={gameData?.game?.id}
