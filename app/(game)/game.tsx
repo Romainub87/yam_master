@@ -10,22 +10,22 @@ import { useWebSocket } from '@/context/WebSocketContext';
 import TurnTimer from '@/components/game/TurnTimer';
 
 export default function GameScreen() {
-    const { userToken } = useAuth();
+    const { userToken, user } = useAuth();
     const { sendMessage, lastMessage, isConnected } = useWebSocket();
     const [gameData, setGameData] = useState<GameData>({} as GameData);
     const params = useLocalSearchParams();
 
     useEffect(() => {
-        if (userToken && params.id && isConnected) {
+        if (user && params.id && isConnected) {
             sendMessage({
                 type: 'game.subscribe',
                 payload: {
-                    token: userToken,
-                    gameId: params.id,
+                    userId: user.id,
+                    gameId: parseInt(params.id as string, 10),
                 },
             });
         }
-    }, [userToken, params.id, isConnected]);
+    }, [user, params.id, isConnected]);
 
     useEffect(() => {
         if (lastMessage) {

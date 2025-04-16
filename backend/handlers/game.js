@@ -10,13 +10,10 @@ import { MessageTypes } from '../types/message.js';
 import jwt from 'jsonwebtoken';
 
 export async function handleGameSubscribe(client, payload) {
+  const { userId, gameId } = payload;
   try {
-    const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
-    const userId = decodedToken.user.id;
-
-    // Récupérer les données de la partie en cours
     const game = await db.game.findUnique({
-      where: { id: parseInt(payload.gameId, 10) },
+      where: { id: gameId },
     });
 
     if (!game) {
@@ -24,16 +21,8 @@ export async function handleGameSubscribe(client, payload) {
       return;
     }
 
-    const existingClient = getGameClients().find(
-        (gameClient) => gameClient.gameId === game.id && gameClient.userId === userId
-    );
-
-    if (!existingClient) {
-      addGameClient({ client, gameId: game.id, userId: userId });
-    }
-
     const playerScores = await db.player_score.findMany({
-      where: { game_id: game.id },
+      where: { game_id: gameId },
     });
 
     const playerScore = playerScores.find(player => player.user_id === userId);
@@ -53,9 +42,7 @@ export async function handleGameSubscribe(client, payload) {
 }
 
 export async function handleRollDices(client, payload) {
-  const gameId = payload.gameId;
-  const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
-  const userId = decodedToken.user.id;
+  const { gameId, userId, count } = payload;
 
   const playerScores = await db.player_score.findMany({
     where: { game_id: gameId },
@@ -88,7 +75,7 @@ export async function handleRollDices(client, payload) {
     return;
   }
 
-  const diceRolls = Array.from({ length: payload.count }, () => Math.floor(Math.random() * 6) + 1);
+  const diceRolls = Array.from({ length: count }, () => Math.floor(Math.random() * 6) + 1);
 
   await db.player_score.update({
     where: {
@@ -113,7 +100,6 @@ export async function handleRollDices(client, payload) {
     },
   });
 
-// Vérifier les combinaisons possibles
   const counts = diceRolls.reduce((acc, value) => {
     acc[value] = (acc[value] || 0) + 1;
     return acc;
@@ -151,19 +137,9 @@ export async function handleRollDices(client, payload) {
 }
 
 export async function handleTurnChange(client, payload) {
-  const gameId = payload.gameId;
-
-  const game = await db.game.findUnique({
-    where: { id: gameId },
-  });
-
-  if (getGameClients().filter(c => c.gameId === gameId).length < 2) {
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Pas assez de joueurs dans la partie' }));
-    return;
-  }
+  const { gameId, userId } = payload;
 
   try {
-    // Récupérer les scores des joueurs pour la partie
     const playerScores = await db.player_score.findMany({
       where: { game_id: gameId },
     });
@@ -173,9 +149,8 @@ export async function handleTurnChange(client, payload) {
       return;
     }
 
-    // Inverser les tours
-    const updates = playerScores.map(player => {
-      return db.player_score.update({
+    for (const player of playerScores) {
+      await db.player_score.update({
         where: {
           game_id_user_id: {
             game_id: gameId,
@@ -183,22 +158,23 @@ export async function handleTurnChange(client, payload) {
           },
         },
         data: {
-          turn: !player.turn,
-          rolls_left: !player.turn ? 3 : 0,
+          turn: player.user_id !== userId,
+          rolls_left: player.user_id !== userId ? 3 : 0,
         },
       });
-    });
+    }
 
-    await Promise.all(updates);
-
-    // Récupérer les scores mis à jour
     const updatedScores = await db.player_score.findMany({
       where: { game_id: gameId },
     });
 
-    // Notifier les clients
+    const game = await db.game.findUnique({
+        where: { id: gameId },
+    });
+
     updatedScores.forEach(player => {
       const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === player.user_id);
+      console.log(gameClient);
       if (gameClient) {
         gameClient.client.send(JSON.stringify({
           type: MessageTypes.GAME_UPDATE,
@@ -262,7 +238,6 @@ export async function handleDefinitiveQuitGame(client, payload) {
 }
 
 export async function handleForfeit(client, payload) {
-  console.log(payload);
     const gameClients = getGameClients().filter(c => c.gameId === payload.gameId && c.userId !== payload.userId);
     gameClients.forEach(gameClient => {
         gameClient.client.send(JSON.stringify({

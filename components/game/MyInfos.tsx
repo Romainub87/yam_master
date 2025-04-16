@@ -96,7 +96,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
         sendMessage({
             type: 'game.rollDices',
             payload: {
-                token,
+                userId: user?.id,
                 gameId: gameData.game.id,
                 count: 5,
             },
