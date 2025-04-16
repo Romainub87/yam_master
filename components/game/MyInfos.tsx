@@ -118,7 +118,6 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
                     <DiceRoller token={token} rolls_left={playerScore.rolls_left} diceValues={diceValues} onRoll={handleRoll} />
                     <View className="my-2 flex-row justify-between w-full">
                         <ForfeitButton gameId={gameData?.game?.id} />
-                        <Button title="Quitter la partie" onPress={handleQuitGame} />
                     </View>
                 </>
             ) : (
