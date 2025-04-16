@@ -16,7 +16,7 @@ export function tryMatchPlayers(waitingClients) {
     );
 
     const second = timeWaited / 1000;
-    const tolerance = 20 + Math.exp((second + 30) / 40.4);
+    const tolerance = 20 + (second / 20) * Math.exp(Math.pow(second, 0.154));
 
     if (p1.ranked === p2.ranked && mmrDiff <= tolerance) {
       waitingClients.splice(i, 2);
