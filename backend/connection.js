@@ -12,6 +12,7 @@ const pool = new Pool({
   port: process.env.POSTGRES_PORT,
 });
 
-export default {
-  query: (text, params) => pool.query(text, params),
-};
+import { PrismaClient } from '@prisma/client';
+const db = new PrismaClient();
+
+export default db;

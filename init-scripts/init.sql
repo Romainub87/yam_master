@@ -3,3 +3,25 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS game (
+    id SERIAL PRIMARY KEY,
+    grid_state JSONB NOT NULL,
+    dice_state JSONB NOT NULL,
+    timer INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS player_score (
+    id SERIAL PRIMARY KEY,
+    game_id INT NOT NULL,
+    user_id INT NOT NULL,
+    score INT NOT NULL,
+    turn BOOLEAN NOT NULL,
+    rolls_left INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (game_id) REFERENCES game(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);

@@ -1,12 +1,22 @@
 import { WebSocketServer } from 'ws';
-import {handleQueueJoin, handleQueueLeave} from './handlers/queue.js';
+import {
+  handleGameSubscribe,
+  handleQueueJoin,
+  handleQueueLeave,
+  handleRollDices,
+  handleTurnChange
+} from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
+let gameClients = [];
 
 const handlers = {
-  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws),
+  [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
+  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) => handleGameSubscribe(ws, payload),
+  [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
+  [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -39,7 +49,8 @@ export function setupWebSocket(server) {
     });
 
     ws.on('close', () => {
-      waitingClients = waitingClients.filter((client) => client !== ws);
+      gameClients = gameClients.filter((client) => client.client !== ws);
+      waitingClients = waitingClients.filter((client) => client.client !== ws);
       console.log('Client déconnecté');
     });
   });
@@ -49,10 +60,24 @@ export function getWaitingClients() {
   return waitingClients;
 }
 
-export function addWaitingClient(client) {
-  waitingClients.push(client);
+export function addWaitingClient(clientData) {
+  waitingClients.push(clientData);
 }
 
-export function removeWaitingClient(client) {
-  waitingClients = waitingClients.filter((c) => c !== client);
+export function removeWaitingClient(clientToRemove) {
+  waitingClients = waitingClients.filter(
+    (c) => c.client !== clientToRemove && c !== clientToRemove
+  );
+}
+
+export function getGameClients() {
+  return gameClients;
+}
+
+export function addGameClient(client) {
+  gameClients.push(client);
+}
+
+export function removeGameClient(client) {
+  gameClients = gameClients.filter((c) => c.client !== client);
 }
