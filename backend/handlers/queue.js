@@ -13,22 +13,22 @@ import { tryMatchPlayers } from '../lib/matchmaking.js';
 export async function handleQueueJoin(client, payload) {
   const { user, token } = payload;
 
-    const suspendedClient = getSuspendedClients().find(
-        (suspendedClient) => suspendedClient.client === client
-    );
-    if (suspendedClient) {
-        removeSuspendedClient(suspendedClient.client);
-        addGameClient(suspendedClient.client);
-        const opponentClient = getGameClients().find(
-            (gameClient) => suspendedClient.gameId && gameClient.userId !== user.id
-        );
-        console.log("Opponent client", opponentClient);
-        if (opponentClient) {
-            opponentClient.client.send(JSON.stringify({ type: MessageTypes.OPPONENT_RECONNECT, message: "L'adversaire s'est reconnecté." }));
-        }
-        suspendedClient.client.send(JSON.stringify({ type: MessageTypes.GAME_RECONNECT, gameId: suspendedClient.gameId, message: "Vous vous êtes reconnecté à la partie." }));
-        return;
-    }
+  const suspendedClient = getSuspendedClients().find(
+      (suspendedClient) => suspendedClient.userId === user.id
+  );
+  if (suspendedClient) {
+      removeSuspendedClient(suspendedClient.client);
+      addGameClient({client: suspendedClient.client, gameId: suspendedClient.gameId, userId: user.id});
+      const opponentClient = getGameClients().find(
+          (gameClient) => suspendedClient.gameId === gameClient.gameId && gameClient.userId !== user.id
+      );
+      console.log(opponentClient);
+      if (opponentClient) {
+          opponentClient.client.send(JSON.stringify({ type: MessageTypes.OPPONENT_RECONNECT, message: "L'adversaire s'est reconnecté." }));
+      }
+      client.send(JSON.stringify({ type: MessageTypes.GAME_RECONNECT, gameId: suspendedClient.gameId, message: "Vous vous êtes reconnecté à la partie." }));
+      return;
+  }
 
   // TODO: Use real value ranked
   const ranked = false;
