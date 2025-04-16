@@ -1,11 +1,10 @@
 import { WebSocketServer } from 'ws';
+import { handleQueueJoin, handleQueueLeave } from './handlers/queue.js';
 import {
   handleGameSubscribe,
-  handleQueueJoin,
-  handleQueueLeave,
   handleRollDices,
   handleTurnChange,
-} from './handlers/queue.js';
+} from './handlers/game.js';
 import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];

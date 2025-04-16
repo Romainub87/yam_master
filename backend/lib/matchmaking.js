@@ -1,5 +1,5 @@
+import { createGame } from './game.js';
 import { removeWaitingClient } from '../websocket.js';
-import { MessageTypes } from '../types/message.js';
 
 export function tryMatchPlayers(waitingClients) {
   // Trie les joueurs par MMR
@@ -19,15 +19,12 @@ export function tryMatchPlayers(waitingClients) {
     const tolerance = 20 + Math.exp((second + 30) / 40.4);
 
     if (p1.ranked === p2.ranked && mmrDiff <= tolerance) {
-      // Match trouvé
-      waitingClients.splice(i, 2); // enlever les 2 joueurs de la file
-      p1.client.send(JSON.stringify({ type: MessageTypes.GAME_START }));
-      p2.client.send(JSON.stringify({ type: MessageTypes.GAME_START }));
-      console.log('Partie démarrée entre deux clients');
-      // Enlever les deux clients de la file d'attente
+      waitingClients.splice(i, 2);
       removeWaitingClient(p1);
       removeWaitingClient(p2);
+      createGame(p1, p2);
       i--; // car on a retiré deux éléments
+      console.log('Partie démarrée entre deux clients');
     }
   }
   return waitingClients;
