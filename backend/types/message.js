@@ -9,4 +9,9 @@ export const MessageTypes = {
   DICE_ROLL: 'game.rollDices',
   OPPONENT_UPDATE: 'opponent.update',
   TURN_CHANGE: 'game.turnChange',
+  QUIT_GAME: 'game.quit',
+  DEFINITIVE_QUIT_GAME: 'game.definitiveQuit',
+  PLAYER_QUIT_GAME: 'player.quitGame',
+  OPPONENT_RECONNECT: 'opponent.reconnect',
+  GAME_RECONNECT: 'game.reconnect',
 };

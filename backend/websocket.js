@@ -1,7 +1,9 @@
 import { WebSocketServer } from 'ws';
-import { handleQueueJoin, handleQueueLeave } from './handlers/queue.js';
 import {
+  handleDefinitiveQuitGame,
   handleGameSubscribe,
+  handleQueueJoin,
+  handleQueueLeave, handleQuitGame,
   handleRollDices,
   handleTurnChange,
 } from './handlers/game.js';
@@ -9,6 +11,8 @@ import { MessageTypes } from './types/message.js';
 
 let waitingClients = [];
 let gameClients = [];
+let suspendedClients = [];
+
 
 const handlers = {
   [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
@@ -17,6 +21,8 @@ const handlers = {
     handleGameSubscribe(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
+  [MessageTypes.QUIT_GAME]: (ws, payload) => handleQuitGame(ws, payload),
+  [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -80,4 +86,16 @@ export function addGameClient(client) {
 
 export function removeGameClient(client) {
   gameClients = gameClients.filter((c) => c.client !== client);
+}
+
+export function getSuspendedClients() {
+  return suspendedClients;
+}
+
+export function addSuspendedClient(client) {
+  suspendedClients.push(client);
+}
+
+export function removeSuspendedClient(client) {
+  suspendedClients = suspendedClients.filter((c) => c.client !== client);
 }
