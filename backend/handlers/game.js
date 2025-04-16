@@ -204,7 +204,7 @@ export async function handleTurnChange(client, payload) {
           type: MessageTypes.GAME_UPDATE,
           opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
           playerScore: player,
-          game: game, // Inclure les données nécessaires de la partie
+          game: game,
           dice: [],
         }));
       }
