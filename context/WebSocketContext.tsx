@@ -17,13 +17,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [lastMessage, setLastMessage] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);
+    const [reconnectAttempts, setReconnectAttempts] = useState(0);
 
-    useEffect(() => {
+    const connectWebSocket = () => {
         const ws = new WebSocket(url);
 
         ws.onopen = () => {
             console.log('WebSocket connecté');
             setIsConnected(true);
+            setReconnectAttempts(0); // Réinitialiser les tentatives de reconnexion
         };
 
         ws.onmessage = (event) => {
@@ -38,16 +40,36 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
         ws.onclose = () => {
             console.log('WebSocket déconnecté');
             setIsConnected(false);
+            attemptReconnect(); // Tenter une reconnexion
         };
 
         ws.onerror = (error) => {
             console.error('Erreur WebSocket :', error);
+            setIsConnected(false);
+            attemptReconnect(); // Tenter une reconnexion
         };
 
         setSocket(ws);
+    };
+
+    const attemptReconnect = () => {
+        if (reconnectAttempts < 5) { // Limiter les tentatives de reconnexion
+            const delay = Math.min(1000 * 2 ** reconnectAttempts, 30000); // Délai exponentiel (max 30s)
+            setTimeout(() => {
+                console.log(`Tentative de reconnexion... (${reconnectAttempts + 1})`);
+                setReconnectAttempts((prev) => prev + 1);
+                connectWebSocket();
+            }, delay);
+        } else {
+            console.warn('Nombre maximum de tentatives de reconnexion atteint.');
+        }
+    };
+
+    useEffect(() => {
+        connectWebSocket();
 
         return () => {
-            ws.close();
+            socket?.close();
         };
     }, [url]);
 
