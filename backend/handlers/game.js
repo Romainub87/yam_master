@@ -156,7 +156,7 @@ export async function handleTurnChange(client, payload) {
           opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
           playerScore: player,
           game: game,
-          dice: [],
+          dice: game.dice_state,
         }));
       }
     });
