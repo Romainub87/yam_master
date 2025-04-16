@@ -1,10 +1,5 @@
-import {
-  getWaitingClients,
-  addWaitingClient,
-  removeWaitingClient,
-} from '../websocket.js';
+import { addWaitingClient, removeWaitingClient } from '../websocket.js';
 import { MessageTypes } from '../types/message.js';
-import { tryMatchPlayers } from '../lib/matchmaking.js';
 
 export async function handleQueueJoin(client, payload) {
   const { user, token } = payload;
@@ -24,7 +19,6 @@ export async function handleQueueJoin(client, payload) {
   // Ajoute le client à la queue
   addWaitingClient(clientData);
   client.send(JSON.stringify({ type: MessageTypes.QUEUE_ADDED }));
-  tryMatchPlayers(getWaitingClients());
 }
 
 export function handleQueueLeave(client) {
