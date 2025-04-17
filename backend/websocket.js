@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 import {
   handleDefinitiveQuitGame, handleForfeit,
-  handleGameSubscribe,
+  handleGameSubscribe, handleLockDice,
   handleRollDices,
   handleTurnChange,
 } from './handlers/game.js';
@@ -21,6 +21,7 @@ const handlers = {
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
   [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) =>
     handleGameSubscribe(ws, payload),
+  [MessageTypes.LOCK_DICE]: (ws, payload) => handleLockDice(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
   [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),

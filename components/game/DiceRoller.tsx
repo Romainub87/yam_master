@@ -6,12 +6,20 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function DiceRoller({rolls_left, diceValues, gameId}: { rolls_left: number, diceValues: Dice[], gameId: number }) {
     const [dices, setDices] = useState<Dice[]>(diceValues);
-    const { sendMessage } = useWebSocket();
+    const { sendMessage, lastMessage } = useWebSocket();
     const { user } = useAuth();
 
     useEffect(() => {
         setDices(diceValues);
     }, [diceValues]);
+
+    useEffect(() => {
+        if (lastMessage) {
+            if (lastMessage.type === 'game.toggleLock') {
+                setDices(lastMessage.dice);
+            }
+        }
+    }, [lastMessage]);
 
     const handleRoll = () => {
         sendMessage({
@@ -25,15 +33,21 @@ export default function DiceRoller({rolls_left, diceValues, gameId}: { rolls_lef
     };
 
     const toggleLock = (index: number) => {
-        setDices((prevDice) =>
-            prevDice.map((dice, i) => (i === index ? { ...dice, locked: !dice.locked } : dice))
-        );
+        sendMessage({
+            type: 'game.toggleLock',
+            payload: {
+                userId: user?.id,
+                gameId: gameId,
+                dicePos: index,
+                dices: dices,
+            },
+        });
     };
 
     return (
         <View className="flex flex-col items-center justify-center">
             <View className="flex flex-row mb-6">
-                {dices.map((dice, index) => (
+                {dices && dices.map((dice, index) => (
                     <TouchableOpacity
                         key={index}
                         onPress={() => toggleLock(index)}

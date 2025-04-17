@@ -1,4 +1,4 @@
-import {addGameClient, getGameClients, getWaitingClients} from '../websocket.js';
+import {addGameClient} from '../websocket.js';
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
 import jwt from 'jsonwebtoken';
@@ -58,4 +58,17 @@ export async function createGame(p1, p2) {
 
   addGameClient({ client: p1.client, gameId: game.id, userId: opponentScore.user_id });
   addGameClient({ client: p2.client, gameId: game.id, userId: playerScore.user_id });
+}
+
+export async function resetDices(game) {
+  return db.$transaction(async (prisma) => {
+    const updatedGame = await prisma.game.update({
+      where: {id: game.id},
+      data: {
+        dice_state: Array(5).fill({value: null, locked: false}),
+      },
+      select: {dice_state: true},
+    });
+    return updatedGame.dice_state;
+  });
 }

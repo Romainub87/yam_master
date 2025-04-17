@@ -1,6 +1,5 @@
-import React , { useEffect } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
-import DiceRoller from "@/components/game/DiceRoller";
 import DiceViewer from "@/components/game/DiceViewer";
 import { GameData } from "@/models/GameData";
 
@@ -9,8 +8,6 @@ interface OpponentInfoProps {
 }
 
 const OpponentInfos: React.FC<OpponentInfoProps> = ({ gameData }: {gameData: GameData}) => {
-
-
     if (!gameData.opponentScore ) {
         return (
             <View className="p-4 bg-gray-800 rounded-lg">

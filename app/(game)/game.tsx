@@ -43,6 +43,15 @@ export default function GameScreen() {
                         opponentScore: lastMessage.opponentScore || null,
                     }));
                 }
+                if (lastMessage.type === 'game.rollDices') {
+                    setGameData(
+                        (prev) => ({
+                            ...prev,
+                            dice: lastMessage.dice,
+                            playerScore: lastMessage.playerScore || null,
+                        })
+                    )
+                }
             } catch (error) {
                 console.error('Erreur lors du traitement du message WebSocket :', error);
             }

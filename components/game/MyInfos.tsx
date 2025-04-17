@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Modal } from 'react-native';
+import { View, Text, Modal } from 'react-native';
 import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';
@@ -8,15 +8,13 @@ import ForfeitButton from "@/components/game/ForfeitButton";
 import { Dice } from "@/models/Dice";
 
 interface MyInfosProps {
-    token: string;
     gameData: any;
 }
 
-const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
+const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
     const { user } = useAuth();
     const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
-    const [diceValues, setDiceValues] = useState<Dice[]>(Array(5).fill({ value: null, locked: false }));
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
     const [isOpponentFF, setIsOpponentFF] = useState(false);
     const [timer, setTimer] = useState<number | null>(null);
@@ -60,13 +58,6 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
     }, [gameData]);
 
     useEffect(() => {
-        if (lastMessage && lastMessage.type === 'game.rollDices') {
-            setDiceValues(lastMessage.dice);
-            setPlayerScore(lastMessage.playerScore);
-        }
-    }, [lastMessage]);
-
-    useEffect(() => {
         if ((isOpponentQuit || isOpponentFF) && timer !== null) {
             const interval = setInterval(() => {
                 setTimer((prev) => (prev !== null && prev > 0 ? prev - 1 : null));
@@ -92,7 +83,7 @@ const MyInfos: React.FC<MyInfosProps> = ({ token, gameData }) => {
                         <>
                             <Text className="text-gray-300">Lancers restants : {playerScore.rolls_left}</Text>
                             <Text className="text-gray-300">Tour actuel : Oui</Text>
-                            <DiceRoller rolls_left={playerScore.rolls_left} diceValues={diceValues} gameId={gameData?.game?.id} />
+                            <DiceRoller rolls_left={playerScore.rolls_left} diceValues={gameData.dice} gameId={gameData?.game?.id} />
                         </>
                     )}
                     <View className="my-2 flex-row justify-between w-full">

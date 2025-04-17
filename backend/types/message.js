@@ -16,5 +16,6 @@ export const MessageTypes = {
   PLAYER_FORFEIT: 'player.ff',
   FORFEIT_GAME: 'game.ff',
   OPPONENT_FORFEIT: 'opponent.ff',
-
+  LOCK_DICE: 'game.toggleLock',
+  LOCK_DICE_OPPONENT: 'opponent.toggleLock',
 };

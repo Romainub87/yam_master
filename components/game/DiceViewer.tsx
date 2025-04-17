@@ -1,11 +1,27 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text } from 'react-native';
 import { Dice } from "@/models/Dice";
+import {useWebSocket} from "@/context/WebSocketContext";
 
 export default function DiceViewer({ diceValues }: { diceValues: Dice[] }) {
+    const { lastMessage } = useWebSocket();
+    const [updatedDiceValues, setDiceValues] = useState<Dice[]>(diceValues);
+
+    useEffect(() => {
+        setDiceValues(diceValues);
+    }, [diceValues]);
+
+    useEffect(() => {
+        if (lastMessage) {
+            if (lastMessage.type === 'opponent.toggleLock') {
+                setDiceValues(lastMessage.dice);
+            }
+        }
+    }, [lastMessage]);
+
     return (
         <View style={{ flexDirection: 'row', marginBottom: 24 }}>
-            {diceValues.map((dice, index) => (
+            {updatedDiceValues.map((dice, index) => (
                 <View
                     key={index}
                     style={{
