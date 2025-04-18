@@ -5,7 +5,7 @@ import {
 } from '../websocket.js';
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
-import {resetDices} from "../lib/game.js";
+import {resetDices, calculateValidCombinations} from "../lib/game.js";
 
 export async function handleGameSubscribe(client, payload) {
   const { userId, gameId } = payload;
@@ -34,6 +34,7 @@ export async function handleGameSubscribe(client, payload) {
       type: MessageTypes.GAME_UPDATE,
       game: game,
       dice: game.dice_state,
+      combinations: calculateValidCombinations(game.dice_state),
       playerScore: playerScore,
       opponentScore: opponentScore,
     }));
@@ -86,28 +87,7 @@ export async function handleRollDices(client, payload) {
     },
   });
 
-  const counts = diceRolls.reduce((acc, dice) => {
-      acc[dice.value] = (acc[dice.value] || 0) + 1;
-      return acc;
-  }, {});
-
-    const validCombination = [];
-
-    if (Object.values(counts).some(count => count === 3)) validCombination.push('BRELAN');
-    if (Object.values(counts).some(count => count === 4)) validCombination.push('CARRE');
-    if (Object.values(counts).includes(3) && Object.values(counts).includes(2)) validCombination.push('FULL');
-    if (Object.values(counts).some(count => count === 5)) validCombination.push('YAM');
-    if ([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) validCombination.push('SUITE');
-
-    const majorityValue = validCombination.length > 0
-        ? Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b))
-        : null;
-
-    [1, 2, 3, 4, 5, 6].forEach(value => {
-        if (parseInt(majorityValue) === value) {
-            validCombination.push(`WITH${value}`);
-        }
-    });
+  const validCombination = calculateValidCombinations(diceRolls);
 
   await db.game.update(
     {
