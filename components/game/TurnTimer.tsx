@@ -1,49 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button } from 'react-native';
-import { useWebSocket } from '@/context/WebSocketContext';
-import {useAuth} from "@/context/AuthContext";
+import React, { useState } from 'react';
+import { View, Text } from 'react-native';
+import { GameData } from '@/models/GameData';
+import { useEffect } from 'react';
+import { useWebSocket } from "@/context/WebSocketContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface TimerProps {
-    token: string;
-    gameId: number;
-    rollsLeft: number;
-    isCurrentTurn: boolean;
+    gameData: GameData;
 }
 
-const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTurn }) => {
-    const { sendMessage } = useWebSocket();
+const TurnTimer: React.FC<TimerProps> = ({ gameData }) => {
+    const [timeLeft, setTimeLeft] = useState(gameData?.game?.timer);
+    const [isCurrentTurn, setIsCurrentTurn] = useState(gameData?.playerScore?.turn);
+    const [rollsLeft, setRollsLeft] = useState(gameData?.playerScore?.rolls_left);
+    const { lastMessage, sendMessage } = useWebSocket();
     const { user } = useAuth();
-    const [timeLeft, setTimeLeft] = useState(20);
 
     useEffect(() => {
-        if (!isCurrentTurn || rollsLeft === 0) {
-            setTimeLeft(20);
-            return;
-        }
+        console.log(gameData);
+        setIsCurrentTurn(gameData?.playerScore?.turn);
+        setRollsLeft(gameData?.playerScore?.rolls_left);
+        setTimeLeft(gameData?.game?.timer);
+    }, [gameData]);
 
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    clearInterval(timer);
+    useEffect(() => {
+        if (lastMessage && lastMessage.type === 'game.timerUpdate') {
+            setTimeLeft(lastMessage.time);
+        }
+    }, [lastMessage]);
+
+    useEffect(() => {
+        if (isCurrentTurn) {
+            if (timeLeft > 0) {
+                const interval = setInterval(() => {
                     sendMessage({
-                        type: 'game.turnChange',
+                        type: 'game.timerUpdate',
                         payload: {
+                            gameId: gameData?.game?.id,
                             userId: user?.id,
-                            gameId: gameId,
+                            time: timeLeft,
                         },
                     });
-                    return 20;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+                }, 1000);
 
-        return () => clearInterval(timer);
-    }, [isCurrentTurn, rollsLeft]);
+                return () => clearInterval(interval);
+            } else {
+                sendMessage({
+                    type: 'game.turnChange',
+                    payload: {
+                        gameId: gameData?.game?.id,
+                        userId: user?.id,
+                    },
+                });
+            }
+        }
+    }, [isCurrentTurn, timeLeft]);
 
     return (
         <View>
-            {isCurrentTurn && rollsLeft > 0 ? (
+            {isCurrentTurn  ? (
                 <Text className="text-white">Temps restant : {timeLeft}s</Text>
             ) : (
                 <Text className="text-white">En attente du tour...</Text>

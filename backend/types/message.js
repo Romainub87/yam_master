@@ -18,4 +18,5 @@ export const MessageTypes = {
   OPPONENT_FORFEIT: 'opponent.ff',
   LOCK_DICE: 'game.toggleLock',
   LOCK_DICE_OPPONENT: 'opponent.toggleLock',
+  TIMER_UPDATE: 'game.timerUpdate',
 };
