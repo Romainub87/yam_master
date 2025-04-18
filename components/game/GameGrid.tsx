@@ -1,64 +1,63 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import {faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo} from '@fortawesome/free-solid-svg-icons';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {GameData} from "@/models/GameData";
+import {Choice} from "@/models/Choice";
+import {Combination} from "@/models/Combinations";
 
 type GridProps = {
-    rows: number;
-    columns: number;
-    onCellPress: (row: number, col: number) => void;
+    gameData: GameData | null;
 };
 
-const icones = [
-    [
-        '1', '3', '⚔️​', '4', '6'
-    ],
-    [
-        '2', '🔲', '🔫​', 'Full', '5'
-    ],
-    [
-        '≤8', 'Full', '🎯​', '⚔️​', '📏'
-    ],
-    [
-        '6', '🔫​', '📏', '≤8', '1'
-    ],
-    [
-        '3', '2', '🔲', '5', '4'
-    ],
-]
+export default function GameGrid({ gameData }: GridProps) {
+    const [gridData, setGridData] = useState<Choice[][]>(gameData?.game?.grid_state || []);
 
-export default function GameGrid({ rows, columns, onCellPress }: GridProps) {
+    useEffect(() => {
+        setGridData(gameData?.game?.grid_state || []);
+    }, [gameData]);
+
     return (
         <View className="flex flex-col items-center justify-center h-1/2">
-            {Array.from({ length: rows }).map((_, rowIndex) => (
-                <View key={rowIndex} className="flex flex-row bg-white">
-                    {Array.from({ length: columns }).map((_, colIndex) => (
+            {gridData.map((row, rowIndex) => (
+                <View key={rowIndex} className="flex flex-row">
+                    {row.map((cell, colIndex) => (
                         <TouchableOpacity
                             key={colIndex}
-                            className="w-16 h-16 border border-gray-400 flex items-center justify-center"
-                            onPress={() => onCellPress(rowIndex, colIndex)}
+                            className={`w-16 h-16 border flex items-center justify-center`}
+                            style={{
+                                backgroundColor: gameData?.combinations && cell.combination && gameData?.combinations.includes(cell.combination) ? 'green' : 'white',
+                            }}
                         >
-                            {!isNaN(Number(icones[rowIndex][colIndex])) && Number(icones[rowIndex][colIndex]) >= 1 && Number(icones[rowIndex][colIndex]) <= 6 ? (
+                            {cell && cell.combination?.includes('WITH') ? (
                                 <Text className="text-2xl p-5 text-center">
                                     <FontAwesomeIcon
                                         icon={
-                                            Number(icones[rowIndex][colIndex]) === 1
+                                            cell.combination === Combination.WITH1
                                                 ? faDiceOne
-                                                : Number(icones[rowIndex][colIndex]) === 2
+                                                : cell.combination === Combination.WITH2
                                                     ? faDiceTwo
-                                                    : Number(icones[rowIndex][colIndex]) === 3
+                                                    : cell.combination === Combination.WITH3
                                                         ? faDiceThree
-                                                        : Number(icones[rowIndex][colIndex]) === 4
+                                                        : cell.combination === Combination.WITH4
                                                             ? faDiceFour
-                                                            : Number(icones[rowIndex][colIndex]) === 5
+                                                            : cell.combination === Combination.WITH5
                                                                 ? faDiceFive
                                                                 : faDiceSix
                                         }
                                     />
                                 </Text>
-
                             ) : (
-                                <Text className="text-lg p-5 text-center font-bold">{`${icones[rowIndex][colIndex]}`}</Text>
+                                <Text className="text-lg p-5 text-center font-bold">
+                                    {cell?.combination === Combination.FULL ? 'FULL' :
+                                        cell?.combination === Combination.SEC ? '🔫' :
+                                            cell?.combination === Combination.DEFI ? '⚔️' :
+                                                cell?.combination === Combination.YAM ? '🎯' :
+                                                    cell?.combination === Combination.CARRE ? '[ ]' :
+                                                        cell?.combination === Combination.LESS8 ? '≤8' :
+                                                            cell?.combination === Combination.SUITE ? '📏' :
+                                                                cell?.combination || ''}
+                                </Text>
                             )}
                         </TouchableOpacity>
                     ))}
