@@ -1,17 +1,14 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import DiceViewer from "@/components/game/DiceViewer";
+import { GameData } from "@/models/GameData";
 
 interface OpponentInfoProps {
-    opponentScore: {
-        user_id: number;
-        score: number;
-        rolls_left: number;
-        turn: boolean;
-    } | null;
+    gameData: GameData;
 }
 
-const OpponentInfo: React.FC<OpponentInfoProps> = ({ opponentScore }) => {
-    if (!opponentScore) {
+const OpponentInfos: React.FC<OpponentInfoProps> = ({ gameData }: {gameData: GameData}) => {
+    if (!gameData.opponentScore ) {
         return (
             <View className="p-4 bg-gray-800 rounded-lg">
                 <Text className="text-white">Aucune information sur l'adversaire</Text>
@@ -19,16 +16,20 @@ const OpponentInfo: React.FC<OpponentInfoProps> = ({ opponentScore }) => {
         );
     }
 
+
     return (
         <View className="p-4 bg-gray-800 rounded-lg">
             <Text className="text-white text-lg font-bold">Adversaire</Text>
-            <Text className="text-gray-300">Score : {opponentScore.score}</Text>
-            <Text className="text-gray-300">Lancers restants : {opponentScore.rolls_left}</Text>
+            <Text className="text-gray-300">Score : {gameData.opponentScore.score}</Text>
+            <Text className="text-gray-300">Lancers restants : {gameData.opponentScore.rolls_left}</Text>
             <Text className="text-gray-300">
-                {opponentScore.turn ? 'Tour actuel : Oui' : 'Tour actuel : Non'}
+                {gameData.opponentScore.turn ? 'Tour actuel : Oui' : 'Tour actuel : Non'}
             </Text>
+            {gameData.opponentScore.turn && gameData.dice && (
+                <DiceViewer diceValues={gameData.dice} />
+            )}
         </View>
     );
 };
 
-export default OpponentInfo;
+export default OpponentInfos;

@@ -9,7 +9,6 @@ export const MessageTypes = {
   DICE_ROLL: 'game.rollDices',
   OPPONENT_UPDATE: 'opponent.update',
   TURN_CHANGE: 'game.turnChange',
-  QUIT_GAME: 'game.quit',
   DEFINITIVE_QUIT_GAME: 'game.definitiveQuit',
   PLAYER_QUIT_GAME: 'player.quitGame',
   OPPONENT_RECONNECT: 'opponent.reconnect',
@@ -17,5 +16,6 @@ export const MessageTypes = {
   PLAYER_FORFEIT: 'player.ff',
   FORFEIT_GAME: 'game.ff',
   OPPONENT_FORFEIT: 'opponent.ff',
-
+  LOCK_DICE: 'game.toggleLock',
+  LOCK_DICE_OPPONENT: 'opponent.toggleLock',
 };
