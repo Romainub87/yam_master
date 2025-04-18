@@ -61,7 +61,7 @@ export default function GameScreen() {
     }, [lastMessage]);
 
     return (
-        <View className="flex justify-center items-center h-full bg-black">
+        <View className="flex justify-between items-center h-full bg-black">
             <OpponentInfos gameData={gameData} />
             <TurnTimer gameData={gameData}/>
             <GameGrid gameData={gameData} />

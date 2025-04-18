@@ -20,7 +20,7 @@ export default function DiceViewer({ diceValues }: { diceValues: Dice[] }) {
     }, [lastMessage]);
 
     return (
-        <View style={{ flexDirection: 'row', marginBottom: 24 }}>
+        <View className="justify-center flex flex-row">
             {updatedDiceValues.map((dice, index) => (
                 <View
                     key={index}
