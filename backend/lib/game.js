@@ -1,13 +1,17 @@
 import {addGameClient} from '../websocket.js';
 import db from '../connection.js';
-import { MessageTypes } from '../types/message.js';
+import {MessageTypes} from '../types/message.js';
 import jwt from 'jsonwebtoken';
 
 export async function createGame(p1, p2) {
   const game = await db.$transaction(async (prisma) => {
 
     const newGame = await prisma.game.create({
-      data: { grid_state: {}, dice_state: Array(5).fill({ value: null, locked: false }), timer: 30 },
+      data: {
+        grid_state: createGridFor2Players(),
+        dice_state: Array(5).fill({ value: null, locked: false }),
+        timer: 30
+      },
     });
 
     const gameId = newGame.id;
@@ -71,4 +75,46 @@ export async function resetDices(game) {
     });
     return updatedGame.dice_state;
   });
+}
+
+export function createGridFor2Players() {
+  return Array.from({ length: 5 }, (_, row) =>
+      Array(5).fill(null).map((_, col) => ({
+        combination: setCaseValue(row, col),
+        user: null,
+      }))
+  );
+}
+
+export function setCaseValue(row, col) {
+  switch (true) {
+    case row === 1 && col === 3 || row === 2 && col === 1:
+      return 'FULL';
+    case row === 3 && col === 1 || row === 1 && col === 2:
+      return 'SEC';
+    case row === 0 && col === 2 || row === 2 && col === 3:
+      return 'DEFI';
+    case row === 2 && col === 2:
+      return 'YAM';
+    case row === 1 && col === 1 || row === 4 && col === 2:
+      return 'CARRE';
+    case row === 2 && col === 0 || row === 3 && col === 3:
+      return 'LESS8';
+    case row === 3 && col === 2 || row === 2 && col === 4:
+      return 'SUITE';
+    case row === 0 && col === 0 || row === 3 && col === 4:
+        return 'WITH1';
+    case row === 1 && col === 0 || row === 4 && col === 1:
+        return 'WITH2';
+    case row === 0 && col === 1 || row === 4 && col === 0:
+        return 'WITH3';
+    case row === 0 && col === 3 || row === 4 && col === 4:
+        return 'WITH4';
+    case row === 1 && col === 4 || row === 4 && col === 3:
+        return 'WITH5';
+    case row === 0 && col === 4 || row === 3 && col === 0:
+        return 'WITH6';
+    default:
+      return null;
+  }
 }

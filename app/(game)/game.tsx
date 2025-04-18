@@ -49,6 +49,7 @@ export default function GameScreen() {
                             ...prev,
                             dice: lastMessage.dice,
                             playerScore: lastMessage.playerScore || null,
+                            combinations: lastMessage.combinations || [],
                         })
                     )
                 }
@@ -57,10 +58,6 @@ export default function GameScreen() {
             }
         }
     }, [lastMessage]);
-
-    const handleCellPress = (row: number, col: number) => {
-        Alert.alert(`Cellule cliquée : ${row}, ${col}`);
-    };
 
     return (
         <View className="flex justify-center items-center h-full bg-black">
@@ -71,8 +68,8 @@ export default function GameScreen() {
                 rollsLeft={gameData?.playerScore?.rolls_left}
                 isCurrentTurn={gameData?.playerScore?.turn}
             />
-            <GameGrid rows={5} columns={5} onCellPress={handleCellPress} />
-            <MyInfos token={userToken!} gameData={gameData} />
+            <GameGrid gameData={gameData} />
+            <MyInfos gameData={gameData} />
         </View>
     );
 }
