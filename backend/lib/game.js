@@ -78,7 +78,7 @@ export async function resetDices(game) {
   });
 }
 
-export function calculateValidCombinations(diceRolls) {
+export function calculateValidCombinations(diceRolls, playerScore, grid_state) {
   const counts = diceRolls.reduce((acc, dice) => {
     if (dice.value === null) return acc;
     acc[dice.value] = (acc[dice.value] || 0) + 1;
@@ -87,21 +87,44 @@ export function calculateValidCombinations(diceRolls) {
 
   const validCombination = [];
 
-  if (Object.values(counts).some(count => count === 3)) validCombination.push('BRELAN');
-  if (Object.values(counts).some(count => count === 4)) validCombination.push('CARRE');
-  if (Object.values(counts).includes(3) && Object.values(counts).includes(2)) validCombination.push('FULL');
-  if (Object.values(counts).some(count => count === 5)) validCombination.push('YAM');
-  if ([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) validCombination.push('SUITE');
+  const isCombinationPlaceable = (combination) => {
+    return grid_state.some(row =>
+        row.some(cell => cell.combination === combination && cell.user === null)
+    );
+  };
+
+  if (diceRolls.every(dice => dice.value !== null) && diceRolls.reduce((sum, dice) => sum + dice.value, 0) <= 8 && isCombinationPlaceable('LESS8')) {
+    validCombination.push('LESS8');
+  }
+  if (Object.values(counts).some(count => count === 3)) {
+    validCombination.push('BRELAN');
+  }
+  if (Object.values(counts).some(count => count === 4) && isCombinationPlaceable('CARRE')) {
+    validCombination.push('CARRE');
+  }
+  if (Object.values(counts).includes(3) && Object.values(counts).includes(2) && isCombinationPlaceable('FULL')) {
+    validCombination.push('FULL');
+  }
+  if (Object.values(counts).some(count => count === 5)) {
+    validCombination.push('YAM'); // Pas de vérification pour YAM
+  }
+  if (([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) && isCombinationPlaceable('SUITE')) {
+    validCombination.push('SUITE');
+  }
 
   const majorityValue = validCombination.length > 0
       ? Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b))
       : null;
 
   [1, 2, 3, 4, 5, 6].forEach(value => {
-    if (parseInt(majorityValue) === value) {
+    if (parseInt(majorityValue) === value && isCombinationPlaceable(`WITH${value}`)) {
       validCombination.push(`WITH${value}`);
     }
   });
+
+  if (playerScore.rolls_left === 2 && validCombination.length > 0 && isCombinationPlaceable('SEC')) {
+    validCombination.push('SEC');
+  }
 
   return validCombination;
 }
@@ -146,4 +169,88 @@ export function setCaseValue(row, col) {
     default:
       return null;
   }
+}
+
+export async function checkAlignmentsAndUpdateScores(gameId, userId) {
+  const game = await db.game.findUnique({ where: { id: gameId } });
+  if (!game) {
+    throw new Error('Partie introuvable');
+  }
+
+  const grid = game.grid_state;
+  const alignments = checkAlignments(grid, userId);
+
+  if (alignments > 0) {
+    await db.player_score.update({
+      where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+      data: { score: alignments },
+    });
+  }
+}
+
+function checkAlignments(grid, userId) {
+  let alignments = 0;
+  // Vérification des lignes
+  grid.forEach(row => {
+    let consecutive = 0;
+    for (let i = 0; i < row.length; i++) {
+      if (row[i].user === userId) {
+        consecutive++;
+        if (consecutive === row.length) {
+          alignments++; // Priorité maximale : alignement complet
+        } else if (consecutive === 4) {
+          alignments += 3; // +3 points pour un alignement de 4
+        } else if (consecutive === 3) {
+          alignments += 1; // +1 point pour un alignement de 3
+        }
+      } else {
+        consecutive = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
+      }
+    }
+  });
+
+// Vérification des colonnes
+  for (let col = 0; col < grid[0].length; col++) {
+    let consecutive = 0;
+    for (let row = 0; row < grid.length; row++) {
+      if (grid[row][col].user === userId) {
+        consecutive++;
+        if (consecutive === grid.length) {
+          alignments++; // Priorité maximale : alignement complet
+        } else if (consecutive === 4) {
+          alignments += 3; // +3 points pour un alignement de 4
+        } else if (consecutive === 3) {
+          alignments += 1; // +1 point pour un alignement de 3
+        }
+      } else {
+        consecutive = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
+      }
+    }
+  }
+
+// Vérification des diagonales
+  let mainDiagonal = 0;
+  let antiDiagonal = 0;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i][i].user === userId) {
+      mainDiagonal++;
+    } else {
+      mainDiagonal = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
+    }
+    if (grid[i][grid.length - 1 - i].user === userId) {
+      antiDiagonal++;
+    } else {
+      antiDiagonal = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
+    }
+  }
+
+  if (mainDiagonal === grid.length || antiDiagonal === grid.length) {
+    alignments++; // Priorité maximale : alignement complet
+  } else if (mainDiagonal === 4 || antiDiagonal === 4) {
+    alignments += 3; // +3 points pour un alignement de 4
+  } else if (mainDiagonal === 3 || antiDiagonal === 3) {
+    alignments += 1; // +1 point pour un alignement de 3
+  }
+
+  return alignments;
 }

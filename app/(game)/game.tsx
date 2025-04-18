@@ -53,6 +53,15 @@ export default function GameScreen() {
                             combinations: lastMessage.combinations || [],
                         })
                     )
+                    if (lastMessage.playerScore.rolls_left === 0 && lastMessage.combinations.length === 0) {
+                        sendMessage({
+                            type: 'game.turnChange',
+                            payload: {
+                                gameId: lastMessage.game.id,
+                                userId: user?.id,
+                            },
+                        })
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors du traitement du message WebSocket :', error);

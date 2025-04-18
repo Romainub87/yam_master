@@ -5,7 +5,7 @@ import {
 } from '../websocket.js';
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
-import {resetDices, calculateValidCombinations} from "../lib/game.js";
+import {resetDices, calculateValidCombinations, checkAlignmentsAndUpdateScores} from "../lib/game.js";
 
 export async function handleGameSubscribe(client, payload) {
   const { userId, gameId } = payload;
@@ -34,7 +34,7 @@ export async function handleGameSubscribe(client, payload) {
       type: MessageTypes.GAME_UPDATE,
       game: game,
       dice: game.dice_state,
-      combinations: calculateValidCombinations(game.dice_state),
+      combinations: calculateValidCombinations(game.dice_state?.length ? game.dice_state : [], playerScore, game.grid_state),
       playerScore: playerScore,
       opponentScore: opponentScore,
     }));
@@ -70,7 +70,7 @@ export async function handleRollDices(client, payload) {
         where: { game_id_user_id: { game_id: gameId, user_id: userId } },
     });
 
-    const validCombination = calculateValidCombinations(diceRolls);
+    const validCombination = calculateValidCombinations(diceRolls, playerScoreUpdated, game.grid_state);
 
     await db.game.update({
         where: { id: gameId },
@@ -244,5 +244,70 @@ export async function handleTimerUpdate(client, payload) {
     client.send(JSON.stringify({
         type: MessageTypes.TIMER_UPDATE,
         time: game.timer,
+    }));
+}
+
+export async function handleScoreCombination(client, payload) {
+    const { gameId, userId, combination, row, col } = payload;
+
+    const game = await db.game.findUnique({ where: { id: gameId } });
+    if (!game) {
+        client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Partie introuvable' }));
+        return;
+    }
+
+    const grid = game.grid_state;
+
+    const updatedGrid = grid.map((rowData, rowIndex) => {
+        if (rowIndex === row) {
+            return rowData.map((cell, colIndex) => {
+                if (colIndex === col) {
+                    return {
+                        ...cell,
+                        user: userId,
+                        combination: combination,
+                    };
+                }
+                return cell;
+            });
+        }
+        return rowData;
+    });
+
+    await db.game.update({
+        where: { id: gameId },
+        data: {
+            grid_state: updatedGrid,
+        },
+    });
+
+    const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
+    const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
+
+    const playerScore = await db.player_score.findUnique({
+        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+    });
+
+    const opponentScore = await db.player_score.findUnique({
+        where: { game_id_user_id: { game_id: gameId, user_id: opponentUserId } },
+    });
+
+    await Promise.all(playerScores.map(player => checkAlignmentsAndUpdateScores(gameId, player.user_id)));
+
+    const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId);
+    if (gameClient) {
+        gameClient.client.send(JSON.stringify({
+            type: MessageTypes.OPPONENT_UPDATE,
+            game: game,
+            playerScore: playerScore,
+            opponentScore: opponentScore,
+        }));
+    }
+
+    client.send(JSON.stringify({
+        type: MessageTypes.SCORE_COMBINATION,
+        game: game,
+        playerScore: playerScore,
+        opponentScore: opponentScore,
     }));
 }

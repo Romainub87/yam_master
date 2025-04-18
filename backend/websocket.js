@@ -4,7 +4,7 @@ import {
   handleGameSubscribe, handleLockDice,
   handleRollDices,
   handleTurnChange,
-    handleTimerUpdate
+  handleTimerUpdate, handleScoreCombination
 } from './handlers/game.js';
 import {
   handleQueueJoin,
@@ -28,6 +28,7 @@ const handlers = {
   [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),
   [MessageTypes.FORFEIT_GAME]: (ws, payload) => handleForfeit(ws, payload),
   [MessageTypes.TIMER_UPDATE]: (ws, payload) => { handleTimerUpdate(ws, payload); },
+  [MessageTypes.SCORE_COMBINATION]: (ws, payload) => { handleScoreCombination(ws, payload); }
 };
 
 export function setupWebSocket(server) {
