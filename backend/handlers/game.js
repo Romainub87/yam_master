@@ -131,7 +131,6 @@ export async function handleLockDice(client, payload) {
     const playerScores = await db.player_score.findMany({
         where: { game_id: gameId },
     });
-0
     const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
 
     const game = await db.game.findUnique({
