@@ -28,6 +28,7 @@ model game {
   id            Int            @id @default(autoincrement())
   grid_state    Json
   dice_state    Json
+  status        String
   timer         Int
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt

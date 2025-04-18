@@ -5,5 +5,7 @@ export interface Game {
     id: number;
     grid_state: Choice[][];
     dice_state: Dice[];
+    status: string;
+    timer: number;
     rolls_left: number;
 }

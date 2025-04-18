@@ -10,7 +10,8 @@ export async function createGame(p1, p2) {
       data: {
         grid_state: createGridFor2Players(),
         dice_state: Array(5).fill({ value: null, locked: false }),
-        timer: 30
+        timer: 20,
+        status: 'IN_PROGRESS',
       },
     });
 

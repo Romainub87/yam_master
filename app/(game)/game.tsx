@@ -47,6 +47,7 @@ export default function GameScreen() {
                     setGameData(
                         (prev) => ({
                             ...prev,
+                            game: lastMessage.game,
                             dice: lastMessage.dice,
                             playerScore: lastMessage.playerScore || null,
                             combinations: lastMessage.combinations || [],
@@ -62,12 +63,7 @@ export default function GameScreen() {
     return (
         <View className="flex justify-center items-center h-full bg-black">
             <OpponentInfos gameData={gameData} />
-            <TurnTimer
-                token={userToken!}
-                gameId={gameData?.game?.id}
-                rollsLeft={gameData?.playerScore?.rolls_left}
-                isCurrentTurn={gameData?.playerScore?.turn}
-            />
+            <TurnTimer gameData={gameData}/>
             <GameGrid gameData={gameData} />
             <MyInfos gameData={gameData} />
         </View>

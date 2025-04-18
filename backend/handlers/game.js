@@ -9,6 +9,10 @@ import {resetDices} from "../lib/game.js";
 
 export async function handleGameSubscribe(client, payload) {
   const { userId, gameId } = payload;
+    const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === userId);
+    if (gameClient && gameClient.client !== client) {
+        gameClient.client = client;
+    }
   try {
     const game = await db.game.findUnique({
       where: { id: gameId },
@@ -197,21 +201,34 @@ export async function handleTurnChange(client, payload) {
         })
     ));
 
-    const updatedScores = await db.player_score.findMany({ where: { game_id: gameId } });
-    const game = await db.game.findUnique({ where: { id: gameId } });
+      const updatedScore = await db.player_score.findMany({ where: { game_id: gameId } });
+      console.log(updatedScore);
+      const game = await db.game.update({
+          where: { id: gameId },
+          data: {
+              timer: 20,
+          },
+      });
 
-      for (const player of updatedScores) {
-          const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === player.user_id);
-          if (gameClient) {
-              gameClient.client.send(JSON.stringify({
-                  type: MessageTypes.GAME_UPDATE,
-                  opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
-                  playerScore: player,
-                  game: game,
-                  dice: await resetDices(game),
-              }));
-          }
-      }
+      const playerScore = updatedScore.find(player => player.user_id === userId);
+      const opponentScore = updatedScore.find(player => player.user_id !== userId);
+      const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id);
+
+      gameClient.client.send(JSON.stringify({
+          type: MessageTypes.GAME_UPDATE,
+          opponentScore: playerScore,
+          playerScore: opponentScore,
+          game: game,
+          dice: await resetDices(game),
+      }));
+
+      client.send(JSON.stringify({
+          type: MessageTypes.GAME_UPDATE,
+          opponentScore: opponentScore,
+          playerScore: playerScore,
+          game: game,
+          dice: await resetDices(game),
+      }));
   } catch (error) {
     client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Erreur lors du changement de tour' }));
   }
@@ -241,10 +258,10 @@ export async function handleForfeit(client, payload) {
   const gameClient = getGameClients().find(c => c.gameId === payload.gameId && c.userId !== payload.userId);
 
   if (gameClient) {
-    gameClient.client.send(JSON.stringify({
-      type: MessageTypes.OPPONENT_FORFEIT,
-      message: `L'adversaire a abandonné.`,
-    }));
+      gameClient.client.send(JSON.stringify({
+          type: MessageTypes.OPPONENT_FORFEIT,
+          message: `L'adversaire a abandonné.`,
+      }));
   }
 
   client.send(JSON.stringify({
@@ -253,4 +270,19 @@ export async function handleForfeit(client, payload) {
   }));
 
   removeGameClient(client);
+}
+
+export async function handleTimerUpdate(client, payload) {
+    const { gameId, time } = payload;
+    const game = await db.game.update({
+        where: { id: gameId },
+        data: {
+            timer: time - 1,
+        },
+    });
+
+    client.send(JSON.stringify({
+        type: MessageTypes.TIMER_UPDATE,
+        time: game.timer,
+    }));
 }
