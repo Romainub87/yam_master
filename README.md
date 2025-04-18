@@ -10,10 +10,28 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. Install prisa model
+
+   ```bash
+   cd backend
+   npm run generate:postgres
+   npm run migrate:postgres
+   ```
+
+3. Start the app
 
    ```bash
     npx expo start
+   ```
+
+   ```bash
+   cd backend
+   npx run dev
    ```
 
 In the output, you'll find options to open the app in a

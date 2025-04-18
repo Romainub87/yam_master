@@ -1,8 +1,7 @@
 import { WebSocketServer } from 'ws';
 import {
   handleDefinitiveQuitGame, handleForfeit,
-  handleGameSubscribe,
-  handleQuitGame,
+  handleGameSubscribe, handleLockDice,
   handleRollDices,
   handleTurnChange,
 } from './handlers/game.js';
@@ -22,9 +21,9 @@ const handlers = {
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
   [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) =>
     handleGameSubscribe(ws, payload),
+  [MessageTypes.LOCK_DICE]: (ws, payload) => handleLockDice(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
-  [MessageTypes.QUIT_GAME]: (ws, payload) => handleQuitGame(ws, payload),
   [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),
   [MessageTypes.FORFEIT_GAME]: (ws, payload) => handleForfeit(ws, payload),
 };
@@ -59,8 +58,6 @@ export function setupWebSocket(server) {
     });
 
     ws.on('close', () => {
-      gameClients = gameClients.filter((client) => client.client !== ws);
-      waitingClients = waitingClients.filter((client) => client.client !== ws);
       console.log('Client déconnecté');
     });
   });

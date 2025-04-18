@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button } from 'react-native';
 import { useWebSocket } from '@/context/WebSocketContext';
+import {useAuth} from "@/context/AuthContext";
 
 interface TimerProps {
     token: string;
@@ -11,6 +12,7 @@ interface TimerProps {
 
 const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTurn }) => {
     const { sendMessage } = useWebSocket();
+    const { user } = useAuth();
     const [timeLeft, setTimeLeft] = useState(20);
 
     useEffect(() => {
@@ -26,8 +28,8 @@ const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTu
                     sendMessage({
                         type: 'game.turnChange',
                         payload: {
-                            token,
-                            gameId,
+                            userId: user?.id,
+                            gameId: gameId,
                         },
                     });
                     return 20;
@@ -36,7 +38,7 @@ const TurnTimer: React.FC<TimerProps> = ({ token, gameId, rollsLeft, isCurrentTu
             });
         }, 1000);
 
-        return () => clearInterval(timer); // Nettoyer le timer à chaque changement
+        return () => clearInterval(timer);
     }, [isCurrentTurn, rollsLeft]);
 
     return (

@@ -1,22 +1,17 @@
 import {
   getGameClients,
-  addGameClient,
   removeGameClient,
-  addSuspendedClient,
   getSuspendedClients, removeSuspendedClient
 } from '../websocket.js';
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
-import jwt from 'jsonwebtoken';
+import {resetDices} from "../lib/game.js";
 
 export async function handleGameSubscribe(client, payload) {
+  const { userId, gameId } = payload;
   try {
-    const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
-    const userId = decodedToken.user.id;
-
-    // Récupérer les données de la partie en cours
     const game = await db.game.findUnique({
-      where: { id: parseInt(payload.gameId, 10) },
+      where: { id: gameId },
     });
 
     if (!game) {
@@ -24,25 +19,17 @@ export async function handleGameSubscribe(client, payload) {
       return;
     }
 
-    const existingClient = getGameClients().find(
-        (gameClient) => gameClient.gameId === game.id && gameClient.userId === userId
-    );
-
-    if (!existingClient) {
-      addGameClient({ client, gameId: game.id, userId: userId });
-    }
-
     const playerScores = await db.player_score.findMany({
-      where: { game_id: game.id },
+      where: { game_id: gameId },
     });
 
     const playerScore = playerScores.find(player => player.user_id === userId);
     const opponentScore = playerScores.find(player => player.user_id !== userId);
 
-    // Envoyer les données de la partie au client
     client.send(JSON.stringify({
       type: MessageTypes.GAME_UPDATE,
       game: game,
+      dice: game.dice_state,
       playerScore: playerScore,
       opponentScore: opponentScore,
     }));
@@ -53,31 +40,13 @@ export async function handleGameSubscribe(client, payload) {
 }
 
 export async function handleRollDices(client, payload) {
-  const gameId = payload.gameId;
-  const decodedToken = jwt.verify(payload.token, process.env.JWT_SECRET);
-  const userId = decodedToken.user.id;
+  const { gameId, userId, dices } = payload;
 
   const playerScores = await db.player_score.findMany({
     where: { game_id: gameId },
   });
 
-  const playerScore = playerScores.find(player => player.user_id === userId);
-  const opponentScore = playerScores.find(player => player.user_id !== userId);
-
-  if (!playerScore) {
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Vous n\'êtes pas dans cette partie' }));
-    return;
-  }
-
-  if (playerScore.rolls_left === 0) {
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Plus de lancers disponibles' }));
-    return;
-  }
-
-  if (!gameId) {
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'ID de la partie manquant' }));
-    return;
-  }
+  const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
 
   const game = await db.game.findUnique({
     where: { id: gameId },
@@ -88,7 +57,7 @@ export async function handleRollDices(client, payload) {
     return;
   }
 
-  const diceRolls = Array.from({ length: payload.count }, () => Math.floor(Math.random() * 6) + 1);
+  const diceRolls = dices.map(dice => ({ value: dice.locked ? dice.value : Math.floor(Math.random() * 6) + 1, locked: dice.locked }));
 
   await db.player_score.update({
     where: {
@@ -113,7 +82,6 @@ export async function handleRollDices(client, payload) {
     },
   });
 
-// Vérifier les combinaisons possibles
   const counts = diceRolls.reduce((acc, value) => {
     acc[value] = (acc[value] || 0) + 1;
     return acc;
@@ -129,115 +97,115 @@ export async function handleRollDices(client, payload) {
     largeStraight: [1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num]),
   };
 
+  await db.game.update(
+    {
+      where: { id: gameId },
+      data: {
+        dice_state: diceRolls
+      },
+    }
+  )
+
   client.send(JSON.stringify({
     type: MessageTypes.DICE_ROLL,
-    dice: diceRolls,
+    dice: diceRolls ?? {},
     game: game,
     combinations: combinations,
     playerScore: playerScoreUpdated,
   }));
 
-  if (opponentScore) {
-    const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentScore.user_id);
-    if (opponentClient) {
-      opponentClient.client.send(JSON.stringify({
-        type: MessageTypes.OPPONENT_UPDATE,
-        dice: diceRolls,
-        game: game,
-        opponentScore: playerScoreUpdated,
-      }));
-    }
+  const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId && c.client !== client);
+  if (opponentClient) {
+    opponentClient.client.send(JSON.stringify({
+      type: MessageTypes.OPPONENT_UPDATE,
+      dice: diceRolls ?? {},
+      game: game,
+      opponentScore: playerScoreUpdated,
+    }));
   }
+}
+
+export async function handleLockDice(client, payload) {
+    const { gameId, userId, dices, dicePos } = payload;
+
+    const playerScores = await db.player_score.findMany({
+        where: { game_id: gameId },
+    });
+    const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
+
+    const game = await db.game.findUnique({
+        where: { id: gameId },
+    });
+
+    if (!game) {
+        client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Partie introuvable' }));
+        return;
+    }
+
+    const diceRolls = dices.map((dice, index) => ({ value: dice.value, locked: index === dicePos ? !dice.locked : dice.locked }));
+
+    await db.game.update(
+        {
+        where: { id: gameId },
+        data: {
+            dice_state: diceRolls
+        },
+        }
+    )
+
+    client.send(JSON.stringify({
+        type: MessageTypes.LOCK_DICE,
+        dice: diceRolls ?? {},
+        game: game,
+    }));
+
+    const opponentClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId && c.client !== client);
+    if (opponentClient) {
+        opponentClient.client.send(JSON.stringify({
+        type: MessageTypes.LOCK_DICE_OPPONENT,
+        dice: diceRolls ?? {},
+        game: game,
+        }));
+    }
 }
 
 export async function handleTurnChange(client, payload) {
-  const gameId = payload.gameId;
-
-  const game = await db.game.findUnique({
-    where: { id: gameId },
-  });
-
-  if (getGameClients().filter(c => c.gameId === gameId).length < 2) {
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Pas assez de joueurs dans la partie' }));
-    return;
-  }
-
-  try {
-    // Récupérer les scores des joueurs pour la partie
-    const playerScores = await db.player_score.findMany({
-      where: { game_id: gameId },
-    });
-
-    if (playerScores.length !== 2) {
-      client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Nombre de joueurs incorrect' }));
-      return;
-    }
-
-    // Inverser les tours
-    const updates = playerScores.map(player => {
-      return db.player_score.update({
-        where: {
-          game_id_user_id: {
-            game_id: gameId,
-            user_id: player.user_id,
-          },
-        },
-        data: {
-          turn: !player.turn,
-          rolls_left: !player.turn ? 3 : 0,
-        },
-      });
-    });
-
-    await Promise.all(updates);
-
-    // Récupérer les scores mis à jour
-    const updatedScores = await db.player_score.findMany({
-      where: { game_id: gameId },
-    });
-
-    // Notifier les clients
-    updatedScores.forEach(player => {
-      const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === player.user_id);
-      if (gameClient) {
-        gameClient.client.send(JSON.stringify({
-          type: MessageTypes.GAME_UPDATE,
-          opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
-          playerScore: player,
-          game: game,
-          dice: [],
-        }));
-      }
-    });
-  } catch (error) {
-    console.error('Erreur dans handleTurnChange :', error);
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Erreur lors du changement de tour' }));
-  }
-}
-
-export async function handleQuitGame(client, payload) {
-
   const { gameId, userId } = payload;
 
   try {
-    const gameClients = getGameClients().filter(c => c.gameId === gameId && c.userId !== userId);
-    gameClients.forEach(gameClient => {
-      gameClient.client.send(JSON.stringify({
-        type: MessageTypes.PLAYER_QUIT_GAME,
-        message: `L'adversaire a quitté la partie.`,
-      }));
-    });
+    const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
 
-    client.send(JSON.stringify({
-      type: MessageTypes.QUIT_GAME,
-      message: 'Vous avez quitté la partie.',
-    }));
+    if (playerScores.length !== 2) {
+      return client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Nombre de joueurs incorrect' }));
+    }
 
-    removeGameClient(client);
-    addSuspendedClient({ client: client, gameId: gameId, userId: userId});
+    await Promise.all(playerScores.map(player =>
+        db.player_score.update({
+          where: { game_id_user_id: { game_id: gameId, user_id: player.user_id } },
+          data: {
+            turn: player.user_id !== userId,
+            rolls_left: player.user_id !== userId ? 3 : 0,
+          },
+        })
+    ));
+
+    const updatedScores = await db.player_score.findMany({ where: { game_id: gameId } });
+    const game = await db.game.findUnique({ where: { id: gameId } });
+
+      for (const player of updatedScores) {
+          const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === player.user_id);
+          if (gameClient) {
+              gameClient.client.send(JSON.stringify({
+                  type: MessageTypes.GAME_UPDATE,
+                  opponentScore: updatedScores.find(p => p.user_id !== player.user_id),
+                  playerScore: player,
+                  game: game,
+                  dice: await resetDices(game),
+              }));
+          }
+      }
   } catch (error) {
-    console.error('Erreur dans handleQuitGame :', error);
-    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Erreur lors de la déconnexion de la partie' }));
+    client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Erreur lors du changement de tour' }));
   }
 }
 
@@ -262,19 +230,19 @@ export async function handleDefinitiveQuitGame(client, payload) {
 }
 
 export async function handleForfeit(client, payload) {
-  console.log(payload);
-    const gameClients = getGameClients().filter(c => c.gameId === payload.gameId && c.userId !== payload.userId);
-    gameClients.forEach(gameClient => {
-        gameClient.client.send(JSON.stringify({
-          type: MessageTypes.OPPONENT_FORFEIT,
-          message: `L'adversaire a abandonné.`,
-        }));
-    });
+  const gameClient = getGameClients().find(c => c.gameId === payload.gameId && c.userId !== payload.userId);
 
-    client.send(JSON.stringify({
-        type: MessageTypes.PLAYER_FORFEIT,
-        message: 'Vous avez abandonné la partie.',
+  if (gameClient) {
+    gameClient.client.send(JSON.stringify({
+      type: MessageTypes.OPPONENT_FORFEIT,
+      message: `L'adversaire a abandonné.`,
     }));
+  }
 
-    removeGameClient(client);
+  client.send(JSON.stringify({
+    type: MessageTypes.PLAYER_FORFEIT,
+    message: 'Vous avez abandonné la partie.',
+  }));
+
+  removeGameClient(client);
 }

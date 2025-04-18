@@ -10,22 +10,22 @@ import { useWebSocket } from '@/context/WebSocketContext';
 import TurnTimer from '@/components/game/TurnTimer';
 
 export default function GameScreen() {
-    const { userToken } = useAuth();
+    const { userToken, user } = useAuth();
     const { sendMessage, lastMessage, isConnected } = useWebSocket();
     const [gameData, setGameData] = useState<GameData>({} as GameData);
     const params = useLocalSearchParams();
 
     useEffect(() => {
-        if (userToken && params.id && isConnected) {
+        if (user && params.id && isConnected) {
             sendMessage({
                 type: 'game.subscribe',
                 payload: {
-                    token: userToken,
-                    gameId: params.id,
+                    userId: user.id,
+                    gameId: parseInt(params.id as string, 10),
                 },
             });
         }
-    }, [userToken, params.id, isConnected]);
+    }, [user, params.id, isConnected]);
 
     useEffect(() => {
         if (lastMessage) {
@@ -39,8 +39,18 @@ export default function GameScreen() {
                 if (lastMessage.type === 'opponent.update') {
                     setGameData((prev) => ({
                         ...prev,
+                        dice: lastMessage.dice,
                         opponentScore: lastMessage.opponentScore || null,
                     }));
+                }
+                if (lastMessage.type === 'game.rollDices') {
+                    setGameData(
+                        (prev) => ({
+                            ...prev,
+                            dice: lastMessage.dice,
+                            playerScore: lastMessage.playerScore || null,
+                        })
+                    )
                 }
             } catch (error) {
                 console.error('Erreur lors du traitement du message WebSocket :', error);
@@ -54,7 +64,7 @@ export default function GameScreen() {
 
     return (
         <View className="flex justify-center items-center h-full bg-black">
-            <OpponentInfos opponentScore={gameData?.opponentScore || null} />
+            <OpponentInfos gameData={gameData} />
             <TurnTimer
                 token={userToken!}
                 gameId={gameData?.game?.id}
