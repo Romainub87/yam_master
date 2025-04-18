@@ -18,15 +18,14 @@ const OpponentInfos: React.FC<OpponentInfoProps> = ({ gameData }: {gameData: Gam
 
 
     return (
-        <View className="p-4 bg-gray-800 rounded-lg">
-            <Text className="text-white text-lg font-bold">Adversaire</Text>
-            <Text className="text-gray-300">Score : {gameData.opponentScore.score}</Text>
-            <Text className="text-gray-300">Lancers restants : {gameData.opponentScore.rolls_left}</Text>
-            <Text className="text-gray-300">
-                {gameData.opponentScore.turn ? 'Tour actuel : Oui' : 'Tour actuel : Non'}
-            </Text>
+        <View className="p-4 w-full h-1/6 bg-gray-800 rounded-lg">
+            <Text className="text-white text-lg font-bold justify-center flex">Adversaire</Text>
+            <Text className="text-gray-300 text-2xl">Score : {gameData.opponentScore.score}</Text>
             {gameData.opponentScore.turn && gameData.dice && (
-                <DiceViewer diceValues={gameData.dice} />
+                <View className="my-2 flex-col justify-center items-center w-full">
+                    <Text className="text-gray-300 mb-2">Lancers restants : {gameData.opponentScore.rolls_left}</Text>
+                    <DiceViewer diceValues={gameData.dice} />
+                </View>
             )}
         </View>
     );

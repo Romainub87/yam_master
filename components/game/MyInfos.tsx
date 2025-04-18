@@ -2,17 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Modal } from 'react-native';
 import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
-import { useAuth } from '@/context/AuthContext';
 import {router} from "expo-router";
 import ForfeitButton from "@/components/game/ForfeitButton";
-import { Dice } from "@/models/Dice";
 
 interface MyInfosProps {
     gameData: any;
 }
 
 const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
-    const { user } = useAuth();
     const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
@@ -23,7 +20,6 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
         sendMessage({
             type: 'game.definitiveQuit',
             payload: {
-                userId: user!.id,
                 gameId: gameData.game.id,
             },
         });
@@ -71,19 +67,17 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
         }
     }, [isOpponentQuit, isOpponentFF, timer]);
 
-
-
     return (
-        <View className="p-4 bg-gray-800 w-full">
-            <Text className="text-white text-lg font-bold">Mes Infos</Text>
+        <View className="p-4 bg-gray-800 h-1/4 flex justify-between w-full">
             {playerScore ? (
                 <>
-                    <Text className="text-gray-300">Score : {playerScore.score}</Text>
+                    <Text className="text-gray-300 text-2xl">Score : {playerScore.score}</Text>
                     {playerScore.turn && (
                         <>
-                            <Text className="text-gray-300">Lancers restants : {playerScore.rolls_left}</Text>
-                            <Text className="text-gray-300">Tour actuel : Oui</Text>
-                            <DiceRoller rolls_left={playerScore.rolls_left} diceValues={gameData.dice} gameId={gameData?.game?.id} />
+                            <View className="my-2 flex-col justify-center items-center w-full">
+                                <Text className="text-gray-300 mb-4">Lancers restants : {playerScore.rolls_left}</Text>
+                                <DiceRoller rolls_left={playerScore.rolls_left} diceValues={gameData.dice} gameId={gameData?.game?.id} />
+                            </View>
                         </>
                     )}
                     <View className="my-2 flex-row justify-between w-full">

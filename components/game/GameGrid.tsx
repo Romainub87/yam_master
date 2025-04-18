@@ -12,9 +12,11 @@ type GridProps = {
 
 export default function GameGrid({ gameData }: GridProps) {
     const [gridData, setGridData] = useState<Choice[][]>(gameData?.game?.grid_state || []);
+    const [combinations, setCombinations] = useState<string[]>(gameData?.combinations || []);
 
     useEffect(() => {
         setGridData(gameData?.game?.grid_state || []);
+        setCombinations(gameData?.combinations || []);
     }, [gameData]);
 
     return (
@@ -26,7 +28,7 @@ export default function GameGrid({ gameData }: GridProps) {
                             key={colIndex}
                             className={`w-16 h-16 border flex items-center justify-center`}
                             style={{
-                                backgroundColor: gameData?.combinations && cell.combination && gameData?.combinations.includes(cell.combination) ? 'green' : 'white',
+                                backgroundColor: combinations && cell.combination && combinations.includes(cell.combination) ? 'green' : 'white',
                             }}
                         >
                             {cell && cell.combination?.includes('WITH') ? (

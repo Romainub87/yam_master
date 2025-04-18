@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View } from 'react-native';
 import GameGrid from '@/components/game/GameGrid';
 import { useAuth } from '@/context/AuthContext';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
@@ -10,7 +10,7 @@ import { useWebSocket } from '@/context/WebSocketContext';
 import TurnTimer from '@/components/game/TurnTimer';
 
 export default function GameScreen() {
-    const { userToken, user } = useAuth();
+    const {user } = useAuth();
     const { sendMessage, lastMessage, isConnected } = useWebSocket();
     const [gameData, setGameData] = useState<GameData>({} as GameData);
     const params = useLocalSearchParams();
@@ -61,7 +61,7 @@ export default function GameScreen() {
     }, [lastMessage]);
 
     return (
-        <View className="flex justify-center items-center h-full bg-black">
+        <View className="flex justify-between items-center h-full bg-black">
             <OpponentInfos gameData={gameData} />
             <TurnTimer gameData={gameData}/>
             <GameGrid gameData={gameData} />
