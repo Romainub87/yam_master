@@ -2,17 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Modal } from 'react-native';
 import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
-import { useAuth } from '@/context/AuthContext';
 import {router} from "expo-router";
 import ForfeitButton from "@/components/game/ForfeitButton";
-import { Dice } from "@/models/Dice";
 
 interface MyInfosProps {
     gameData: any;
 }
 
 const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
-    const { user } = useAuth();
     const { sendMessage, lastMessage } = useWebSocket();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
@@ -23,7 +20,6 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
         sendMessage({
             type: 'game.definitiveQuit',
             payload: {
-                userId: user!.id,
                 gameId: gameData.game.id,
             },
         });
@@ -70,8 +66,6 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
             return () => clearInterval(interval);
         }
     }, [isOpponentQuit, isOpponentFF, timer]);
-
-
 
     return (
         <View className="p-4 bg-gray-800 w-full">

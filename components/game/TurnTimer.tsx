@@ -12,14 +12,11 @@ interface TimerProps {
 const TurnTimer: React.FC<TimerProps> = ({ gameData }) => {
     const [timeLeft, setTimeLeft] = useState(gameData?.game?.timer);
     const [isCurrentTurn, setIsCurrentTurn] = useState(gameData?.playerScore?.turn);
-    const [rollsLeft, setRollsLeft] = useState(gameData?.playerScore?.rolls_left);
     const { lastMessage, sendMessage } = useWebSocket();
     const { user } = useAuth();
 
     useEffect(() => {
-        console.log(gameData);
         setIsCurrentTurn(gameData?.playerScore?.turn);
-        setRollsLeft(gameData?.playerScore?.rolls_left);
         setTimeLeft(gameData?.game?.timer);
     }, [gameData]);
 
