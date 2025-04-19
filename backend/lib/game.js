@@ -78,7 +78,7 @@ export async function resetDices(game) {
   });
 }
 
-export function calculateValidCombinations(diceRolls) {
+export function calculateValidCombinations(diceRolls, playerScore, grid_state) {
   const counts = diceRolls.reduce((acc, dice) => {
     if (dice.value === null) return acc;
     acc[dice.value] = (acc[dice.value] || 0) + 1;
@@ -87,21 +87,77 @@ export function calculateValidCombinations(diceRolls) {
 
   const validCombination = [];
 
-  if (Object.values(counts).some(count => count === 3)) validCombination.push('BRELAN');
-  if (Object.values(counts).some(count => count === 4)) validCombination.push('CARRE');
-  if (Object.values(counts).includes(3) && Object.values(counts).includes(2)) validCombination.push('FULL');
-  if (Object.values(counts).some(count => count === 5)) validCombination.push('YAM');
-  if ([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) validCombination.push('SUITE');
+  const isCombinationPlaceable = (combination) => {
+    return grid_state.some(row =>
+        row.some(cell => cell.combination === combination && cell.user === null)
+    );
+  };
+
+  if (
+      diceRolls.every(dice => dice.value !== null) &&
+      diceRolls.reduce((sum, dice) => sum + dice.value, 0) <= 8 &&
+      isCombinationPlaceable('LESS8')
+  ) {
+    validCombination.push('LESS8');
+  }
+  if (
+      Object.values(counts).some(count => count === 4) &&
+      isCombinationPlaceable('CARRE')
+  ) {
+    validCombination.push('CARRE');
+  }
+  if (
+      Object.values(counts).includes(3) &&
+      Object.values(counts).includes(2) &&
+      isCombinationPlaceable('FULL')
+  ) {
+    validCombination.push('FULL');
+  }
+  if (
+      Object.values(counts).some(count => count === 5)
+  ) {
+    validCombination.push('YAM');
+  }
+  if (
+      ([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) &&
+      isCombinationPlaceable('SUITE')
+  ) {
+    validCombination.push('SUITE');
+  }
+  if (
+      Object.values(counts).some(count => count === 3)
+  ) {
+    validCombination.push('BRELAN');
+  }
 
   const majorityValue = validCombination.length > 0
       ? Object.keys(counts).reduce((a, b) => (counts[a] > counts[b] ? a : b))
       : null;
 
   [1, 2, 3, 4, 5, 6].forEach(value => {
-    if (parseInt(majorityValue) === value) {
+    if (
+        parseInt(majorityValue) === value &&
+        isCombinationPlaceable(`WITH${value}`)
+    ) {
       validCombination.push(`WITH${value}`);
     }
   });
+
+  if (
+      playerScore &&
+      playerScore.rolls_left === 2 &&
+      validCombination.length > 0 &&
+      isCombinationPlaceable('SEC')) {
+    validCombination.push('SEC');
+  }
+
+  if (playerScore?.challenge && validCombination.length > 0) {
+    validCombination.push('DEFI');
+  }
+
+  if (validCombination.includes('BRELAN')) {
+      validCombination.splice(validCombination.indexOf('BRELAN'), 1);
+  }
 
   return validCombination;
 }
@@ -147,3 +203,81 @@ export function setCaseValue(row, col) {
       return null;
   }
 }
+
+export async function checkAlignmentsAndUpdateScores(gameId, userId) {
+  const game = await db.game.findUnique({ where: { id: gameId } });
+  if (!game) {
+    throw new Error('Partie introuvable');
+  }
+
+  const grid = game.grid_state;
+  const alignments = checkAlignments(grid, userId);
+
+  if (alignments > 0) {
+    await db.player_score.update({
+      where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+      data: { score: alignments },
+    });
+  }
+}
+
+function checkAlignments(grid, userId) {
+  let alignments = 0;
+
+  // Helper function to calculate alignment score
+  const calculateAlignmentScore = (count) => {
+    if (count === 5) return 3; // Example score for 5 consecutive cells
+    if (count === 4) return 2;
+    if (count === 3) return 1;
+    return 0;
+  };
+
+  // Check rows and columns (similar to before)
+  const checkRowColumn = (cells) => {
+    let consecutive = 0;
+    cells.forEach(cell => {
+      consecutive = (cell.user === userId) ? consecutive + 1 : 0;
+      if (consecutive >= 3) {
+        alignments += calculateAlignmentScore(consecutive);
+        consecutive = 0; // Reset after scoring
+      }
+    });
+  };
+
+  // Check all rows
+  grid.forEach(row => checkRowColumn(row));
+
+  // Check all columns
+  for (let col = 0; col < grid[0].length; col++) {
+    let column = grid.map(row => row[col]);
+    checkRowColumn(column);
+  }
+
+  // Check diagonals
+  const checkDiagonal = (startRow, startCol, rowIncrement, colIncrement) => {
+    let consecutive = 0;
+    let row = startRow, col = startCol;
+    while (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+      consecutive = (grid[row][col].user === userId) ? consecutive + 1 : 0;
+      if (consecutive >= 3) {
+        alignments += calculateAlignmentScore(consecutive);
+        consecutive = 0; // Reset after scoring
+      }
+      row += rowIncrement;
+      col += colIncrement;
+    }
+  };
+
+  // Check all possible diagonals
+  for (let i = 0; i < grid.length; i++) {
+    checkDiagonal(i, 0, 1, 1); // Main diagonals starting from the first column
+    checkDiagonal(i, 0, -1, 1); // Anti-diagonals starting from the first column
+  }
+  for (let j = 1; j < grid[0].length; j++) {
+    checkDiagonal(0, j, 1, 1); // Main diagonals starting from the first row
+    checkDiagonal(0, j, 1, -1); // Anti-diagonals starting from the first row
+  }
+
+  return alignments;
+}
+

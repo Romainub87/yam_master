@@ -40,6 +40,7 @@ model player_score {
   user_id    Int
   score      Int
   turn       Boolean
+  challenge  Boolean  @default(false)
   rolls_left Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
