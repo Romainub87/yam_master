@@ -1,7 +1,8 @@
 import {
   getGameClients,
   removeGameClient,
-  getSuspendedClients, removeSuspendedClient
+  getSuspendedClients,
+  removeSuspendedClient
 } from '../websocket.js';
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
@@ -153,6 +154,7 @@ export async function handleTurnChange(client, payload) {
           data: {
             turn: player.user_id !== userId,
             rolls_left: player.user_id !== userId ? 3 : 0,
+            challenge: false,
           },
         })
     ));
@@ -309,5 +311,34 @@ export async function handleScoreCombination(client, payload) {
         game: game,
         playerScore: playerScore,
         opponentScore: opponentScore,
+    }));
+}
+
+export async function handleChallenge(client, payload) {
+    const { gameId, userId } = payload;
+
+    const game = await db.game.findUnique({ where: { id: gameId } });
+
+    if (!game) {
+        client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Partie introuvable', show: false }));
+        return;
+    }
+
+    const hasFreeChallengeCell = game.grid_state.some(row => row.some(cell => cell.combination === 'DEFI' && !cell.user));
+
+    if (!hasFreeChallengeCell) {
+        client.send(JSON.stringify({ type: MessageTypes.CHALLENGE, message: 'Aucune case défi disponible.', show: false }));
+        return;
+    }
+
+    await db.player_score.update({
+        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+        data: { challenge: true },
+    });
+
+    client.send(JSON.stringify({
+        type: MessageTypes.CHALLENGE,
+        message: 'Défi activé !',
+        show: false,
     }));
 }

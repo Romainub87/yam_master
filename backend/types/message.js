@@ -20,4 +20,5 @@ export const MessageTypes = {
   LOCK_DICE_OPPONENT: 'opponent.toggleLock',
   TIMER_UPDATE: 'game.timerUpdate',
   SCORE_COMBINATION: 'game.scoreCombination',
+  CHALLENGE: 'game.challenge',
 };

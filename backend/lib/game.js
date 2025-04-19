@@ -151,6 +151,10 @@ export function calculateValidCombinations(diceRolls, playerScore, grid_state) {
     validCombination.push('SEC');
   }
 
+  if (playerScore?.challenge && validCombination.length > 0) {
+    validCombination.push('DEFI');
+  }
+
   if (validCombination.includes('BRELAN')) {
       validCombination.splice(validCombination.indexOf('BRELAN'), 1);
   }

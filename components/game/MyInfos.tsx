@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal } from 'react-native';
+import { View , Text , Modal , Button } from 'react-native';
 import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
 import {router} from "expo-router";
 import ForfeitButton from "@/components/game/ForfeitButton";
+import { useAuth } from "@/context/AuthContext";
 
 interface MyInfosProps {
     gameData: any;
@@ -11,10 +12,12 @@ interface MyInfosProps {
 
 const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
     const { sendMessage, lastMessage } = useWebSocket();
+    const { user } = useAuth();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
     const [isOpponentQuit, setIsOpponentQuit] = useState(false);
     const [isOpponentFF, setIsOpponentFF] = useState(false);
     const [timer, setTimer] = useState<number | null>(null);
+    const [showChallengeButton, setShowChallengeButton] = useState(true);
 
     const handleDefinitiveQuitGame = () => {
         sendMessage({
@@ -24,6 +27,18 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
             },
         });
     }
+
+    const handleChallenge = () => {
+        sendMessage({
+            type: 'game.challenge',
+            payload: {
+                gameId: gameData.game.id,
+                userId: user?.id,
+            },
+        });
+    }
+
+
 
     useEffect(() => {
         if (lastMessage) {
@@ -46,11 +61,16 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
                 setIsOpponentFF(true);
                 setTimer(5);
             }
+            if (lastMessage.type === 'game.challenge') {
+                setShowChallengeButton(lastMessage.show);
+            }
         }
     }, [lastMessage]);
 
     useEffect(() => {
         setPlayerScore(gameData?.playerScore);
+        const hasFreeCells = gameData?.game?.grid_state?.some((row: any[]) => row.some((cell: { combination: string; user: any; }) => cell.combination === 'DEFI' && !cell.user));
+        setShowChallengeButton(hasFreeCells);
     }, [gameData]);
 
     useEffect(() => {
@@ -82,6 +102,7 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
                     )}
                     <View className="my-2 flex-row justify-between w-full">
                         <ForfeitButton gameId={gameData?.game?.id} />
+                        <Button title="Lancer défi" onPress={() => {handleChallenge() }} disabled={!showChallengeButton || !playerScore.turn || playerScore.rolls_left < 2 } />
                     </View>
                 </>
             ) : (
