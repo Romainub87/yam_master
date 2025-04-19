@@ -93,23 +93,41 @@ export function calculateValidCombinations(diceRolls, playerScore, grid_state) {
     );
   };
 
-  if (diceRolls.every(dice => dice.value !== null) && diceRolls.reduce((sum, dice) => sum + dice.value, 0) <= 8 && isCombinationPlaceable('LESS8')) {
+  if (
+      diceRolls.every(dice => dice.value !== null) &&
+      diceRolls.reduce((sum, dice) => sum + dice.value, 0) <= 8 &&
+      isCombinationPlaceable('LESS8')
+  ) {
     validCombination.push('LESS8');
   }
-  if (Object.values(counts).some(count => count === 3)) {
-    validCombination.push('BRELAN');
-  }
-  if (Object.values(counts).some(count => count === 4) && isCombinationPlaceable('CARRE')) {
+  if (
+      Object.values(counts).some(count => count === 4) &&
+      isCombinationPlaceable('CARRE')
+  ) {
     validCombination.push('CARRE');
   }
-  if (Object.values(counts).includes(3) && Object.values(counts).includes(2) && isCombinationPlaceable('FULL')) {
+  if (
+      Object.values(counts).includes(3) &&
+      Object.values(counts).includes(2) &&
+      isCombinationPlaceable('FULL')
+  ) {
     validCombination.push('FULL');
   }
-  if (Object.values(counts).some(count => count === 5)) {
-    validCombination.push('YAM'); // Pas de vérification pour YAM
+  if (
+      Object.values(counts).some(count => count === 5)
+  ) {
+    validCombination.push('YAM');
   }
-  if (([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) && isCombinationPlaceable('SUITE')) {
+  if (
+      ([1, 2, 3, 4, 5].every(num => counts[num]) || [2, 3, 4, 5, 6].every(num => counts[num])) &&
+      isCombinationPlaceable('SUITE')
+  ) {
     validCombination.push('SUITE');
+  }
+  if (
+      Object.values(counts).some(count => count === 3)
+  ) {
+    validCombination.push('BRELAN');
   }
 
   const majorityValue = validCombination.length > 0
@@ -117,13 +135,24 @@ export function calculateValidCombinations(diceRolls, playerScore, grid_state) {
       : null;
 
   [1, 2, 3, 4, 5, 6].forEach(value => {
-    if (parseInt(majorityValue) === value && isCombinationPlaceable(`WITH${value}`)) {
+    if (
+        parseInt(majorityValue) === value &&
+        isCombinationPlaceable(`WITH${value}`)
+    ) {
       validCombination.push(`WITH${value}`);
     }
   });
 
-  if (playerScore.rolls_left === 2 && validCombination.length > 0 && isCombinationPlaceable('SEC')) {
+  if (
+      playerScore &&
+      playerScore.rolls_left === 2 &&
+      validCombination.length > 0 &&
+      isCombinationPlaceable('SEC')) {
     validCombination.push('SEC');
+  }
+
+  if (validCombination.includes('BRELAN')) {
+      validCombination.splice(validCombination.indexOf('BRELAN'), 1);
   }
 
   return validCombination;
@@ -190,67 +219,62 @@ export async function checkAlignmentsAndUpdateScores(gameId, userId) {
 
 function checkAlignments(grid, userId) {
   let alignments = 0;
-  // Vérification des lignes
-  grid.forEach(row => {
-    let consecutive = 0;
-    for (let i = 0; i < row.length; i++) {
-      if (row[i].user === userId) {
-        consecutive++;
-        if (consecutive === row.length) {
-          alignments++; // Priorité maximale : alignement complet
-        } else if (consecutive === 4) {
-          alignments += 3; // +3 points pour un alignement de 4
-        } else if (consecutive === 3) {
-          alignments += 1; // +1 point pour un alignement de 3
-        }
-      } else {
-        consecutive = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
-      }
-    }
-  });
 
-// Vérification des colonnes
+  // Helper function to calculate alignment score
+  const calculateAlignmentScore = (count) => {
+    if (count === 5) return 3; // Example score for 5 consecutive cells
+    if (count === 4) return 2;
+    if (count === 3) return 1;
+    return 0;
+  };
+
+  // Check rows and columns (similar to before)
+  const checkRowColumn = (cells) => {
+    let consecutive = 0;
+    cells.forEach(cell => {
+      consecutive = (cell.user === userId) ? consecutive + 1 : 0;
+      if (consecutive >= 3) {
+        alignments += calculateAlignmentScore(consecutive);
+        consecutive = 0; // Reset after scoring
+      }
+    });
+  };
+
+  // Check all rows
+  grid.forEach(row => checkRowColumn(row));
+
+  // Check all columns
   for (let col = 0; col < grid[0].length; col++) {
+    let column = grid.map(row => row[col]);
+    checkRowColumn(column);
+  }
+
+  // Check diagonals
+  const checkDiagonal = (startRow, startCol, rowIncrement, colIncrement) => {
     let consecutive = 0;
-    for (let row = 0; row < grid.length; row++) {
-      if (grid[row][col].user === userId) {
-        consecutive++;
-        if (consecutive === grid.length) {
-          alignments++; // Priorité maximale : alignement complet
-        } else if (consecutive === 4) {
-          alignments += 3; // +3 points pour un alignement de 4
-        } else if (consecutive === 3) {
-          alignments += 1; // +1 point pour un alignement de 3
-        }
-      } else {
-        consecutive = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
+    let row = startRow, col = startCol;
+    while (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+      consecutive = (grid[row][col].user === userId) ? consecutive + 1 : 0;
+      if (consecutive >= 3) {
+        console.log(consecutive);
+        alignments += calculateAlignmentScore(consecutive);
+        consecutive = 0; // Reset after scoring
       }
+      row += rowIncrement;
+      col += colIncrement;
     }
-  }
+  };
 
-// Vérification des diagonales
-  let mainDiagonal = 0;
-  let antiDiagonal = 0;
+  // Check all possible diagonals
   for (let i = 0; i < grid.length; i++) {
-    if (grid[i][i].user === userId) {
-      mainDiagonal++;
-    } else {
-      mainDiagonal = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
-    }
-    if (grid[i][grid.length - 1 - i].user === userId) {
-      antiDiagonal++;
-    } else {
-      antiDiagonal = 0; // Réinitialiser si la case n'appartient pas à l'utilisateur
-    }
+    checkDiagonal(i, 0, 1, 1); // Main diagonals starting from the first column
+    checkDiagonal(i, 0, -1, 1); // Anti-diagonals starting from the first column
   }
-
-  if (mainDiagonal === grid.length || antiDiagonal === grid.length) {
-    alignments++; // Priorité maximale : alignement complet
-  } else if (mainDiagonal === 4 || antiDiagonal === 4) {
-    alignments += 3; // +3 points pour un alignement de 4
-  } else if (mainDiagonal === 3 || antiDiagonal === 3) {
-    alignments += 1; // +1 point pour un alignement de 3
+  for (let j = 1; j < grid[0].length; j++) {
+    checkDiagonal(0, j, 1, 1); // Main diagonals starting from the first row
+    checkDiagonal(0, j, 1, -1); // Anti-diagonals starting from the first row
   }
 
   return alignments;
 }
+
