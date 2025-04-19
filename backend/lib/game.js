@@ -260,7 +260,6 @@ function checkAlignments(grid, userId) {
     while (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
       consecutive = (grid[row][col].user === userId) ? consecutive + 1 : 0;
       if (consecutive >= 3) {
-        console.log(consecutive);
         alignments += calculateAlignmentScore(consecutive);
         consecutive = 0; // Reset after scoring
       }
