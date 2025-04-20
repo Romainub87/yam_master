@@ -11,8 +11,10 @@ import {
   handleChallenge
 } from './handlers/game.js';
 import {
+  handleClientDisconnection,
   handleQueueJoin,
-  handleQueueLeave
+  handleQueueLeave,
+  handleGameReconnect
 } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 
@@ -34,6 +36,7 @@ const handlers = {
   [MessageTypes.TIMER_UPDATE]: (ws, payload) => { handleTimerUpdate(ws, payload); },
   [MessageTypes.SCORE_COMBINATION]: (ws, payload) => { handleScoreCombination(ws, payload); },
   [MessageTypes.CHALLENGE]: (ws, payload) => { handleChallenge(ws, payload); },
+  [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -67,6 +70,7 @@ export function setupWebSocket(server) {
 
     ws.on('close', () => {
       console.log('Client déconnecté');
+      handleClientDisconnection(ws);
     });
   });
 }

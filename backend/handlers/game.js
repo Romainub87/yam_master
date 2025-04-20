@@ -231,6 +231,13 @@ export async function handleForfeit(client, payload) {
     message: 'Vous avez abandonné la partie.',
   }));
 
+  await db.game.update(
+    {
+      where: { id: payload.gameId },
+      data: { status: 'FINISHED' },
+    }
+  )
+
   removeGameClient(client);
 }
 

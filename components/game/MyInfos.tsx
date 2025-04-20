@@ -38,8 +38,6 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
         });
     }
 
-
-
     useEffect(() => {
         if (lastMessage) {
             if (lastMessage.type === 'player.quitGame') {
@@ -102,7 +100,7 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
                     )}
                     <View className="my-2 flex-row justify-between w-full">
                         <ForfeitButton gameId={gameData?.game?.id} />
-                        <Button title="Lancer défi" onPress={() => {handleChallenge() }} disabled={!showChallengeButton || !playerScore.turn || playerScore.rolls_left < 2 } />
+                        <Button title="Lancer défi" onPress={() => {handleChallenge() }} disabled={!showChallengeButton || !playerScore.turn || playerScore.rolls_left < 2 || playerScore.rolls_left === 3 } />
                     </View>
                 </>
             ) : (
