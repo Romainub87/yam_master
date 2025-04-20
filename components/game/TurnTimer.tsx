@@ -24,10 +24,12 @@ const TurnTimer: React.FC<TimerProps> = ({ gameData }) => {
         if (lastMessage && lastMessage.type === 'game.timerUpdate') {
             setTimeLeft(lastMessage.time);
         }
+
     }, [lastMessage]);
 
     useEffect(() => {
-        if (isCurrentTurn) {
+        console.log(gameData.game);
+        if (gameData && isCurrentTurn && gameData?.game?.status !== 'FINISHED') {
             if (timeLeft > 0) {
                 const interval = setInterval(() => {
                     sendMessage({

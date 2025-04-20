@@ -204,14 +204,14 @@ export function setCaseValue(row, col) {
   }
 }
 
-export async function checkAlignmentsAndUpdateScores(gameId, userId) {
+export async function checkAlignmentsAndUpdateScores(gameId, userId, client, opponentClient) {
   const game = await db.game.findUnique({ where: { id: gameId } });
   if (!game) {
     throw new Error('Partie introuvable');
   }
 
   const grid = game.grid_state;
-  const alignments = checkAlignments(grid, userId);
+  const alignments = checkAlignments(grid, userId, gameId, game.isRanked, client, opponentClient);
 
   if (alignments > 0) {
     await db.player_score.update({
@@ -221,39 +221,44 @@ export async function checkAlignmentsAndUpdateScores(gameId, userId) {
   }
 }
 
-function checkAlignments(grid, userId) {
+async function checkAlignments(grid, userId, gameId, isRanked, client, opponentClient) {
   let alignments = 0;
+  let hasWon = false;
 
   // Helper function to calculate alignment score
   const calculateAlignmentScore = (count) => {
-    if (count === 5) return 3; // Example score for 5 consecutive cells
+    if (count === 5) {
+      hasWon = true; // Détecte un alignement de 5
+      return 3; // Exemple de score pour 5 cellules consécutives
+    }
     if (count === 4) return 2;
     if (count === 3) return 1;
     return 0;
   };
 
-  // Check rows and columns (similar to before)
+  // Check rows and columns (similaire à avant)
   const checkRowColumn = (cells) => {
     let consecutive = 0;
     cells.forEach(cell => {
       consecutive = (cell.user === userId) ? consecutive + 1 : 0;
       if (consecutive >= 3) {
         alignments += calculateAlignmentScore(consecutive);
-        consecutive = 0; // Reset after scoring
+        if (hasWon) return; // Arrête si victoire détectée
       }
     });
   };
 
-  // Check all rows
+  // Vérifie toutes les lignes
   grid.forEach(row => checkRowColumn(row));
 
-  // Check all columns
+  // Vérifie toutes les colonnes
   for (let col = 0; col < grid[0].length; col++) {
     let column = grid.map(row => row[col]);
     checkRowColumn(column);
+    if (hasWon) break; // Arrête si victoire détectée
   }
 
-  // Check diagonals
+  // Vérifie les diagonales
   const checkDiagonal = (startRow, startCol, rowIncrement, colIncrement) => {
     let consecutive = 0;
     let row = startRow, col = startCol;
@@ -261,23 +266,59 @@ function checkAlignments(grid, userId) {
       consecutive = (grid[row][col].user === userId) ? consecutive + 1 : 0;
       if (consecutive >= 3) {
         alignments += calculateAlignmentScore(consecutive);
-        consecutive = 0; // Reset after scoring
+        if (hasWon) return; // Arrête si victoire détectée
       }
       row += rowIncrement;
       col += colIncrement;
     }
   };
 
-  // Check all possible diagonals
+  // Vérifie toutes les diagonales possibles
   for (let i = 0; i < grid.length; i++) {
-    checkDiagonal(i, 0, 1, 1); // Main diagonals starting from the first column
-    checkDiagonal(i, 0, -1, 1); // Anti-diagonals starting from the first column
+    checkDiagonal(i, 0, 1, 1); // Diagonales principales à partir de la première colonne
+    checkDiagonal(i, 0, -1, 1); // Anti-diagonales à partir de la première colonne
+    if (hasWon) break; // Arrête si victoire détectée
   }
   for (let j = 1; j < grid[0].length; j++) {
-    checkDiagonal(0, j, 1, 1); // Main diagonals starting from the first row
-    checkDiagonal(0, j, 1, -1); // Anti-diagonals starting from the first row
+    checkDiagonal(0, j, 1, 1); // Diagonales principales à partir de la première ligne
+    checkDiagonal(0, j, 1, -1); // Anti-diagonales à partir de la première ligne
+    if (hasWon) break; // Arrête si victoire détectée
+  }
+
+  // Si un alignement de 5 est détecté, envoie les messages et met à jour le MMR
+  if (hasWon) {
+    await db.game.update({
+      where: {id: gameId},
+      data: {status: 'FINISHED'},
+    });
+
+    client.send(JSON.stringify({
+      type: MessageTypes.GAME_WIN,
+      message: 'Vous avez gagné !',
+    }));
+
+    if (opponentClient) {
+      opponentClient.client.send(JSON.stringify({
+        type: MessageTypes.GAME_LOSE,
+        message: 'Vous avez perdu.',
+      }));
+    }
+
+
+    if (isRanked) {
+      updateMMR(userId, gameId, true); // Met à jour le MMR du gagnant
+      updateMMR(opponentClient.userId, gameId, false); // Met à jour le MMR du perdant
+    }
   }
 
   return alignments;
+}
+
+function updateMMR(userId, gameId, isWinner) {
+    const mmrChange = isWinner ? 9 : -9; // Exemple de changement de MMR
+    return db.player_score.update({
+        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+        data: { mmr: { increment: mmrChange } },
+    });
 }
 
