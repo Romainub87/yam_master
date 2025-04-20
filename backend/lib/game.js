@@ -1,7 +1,7 @@
 import {addGameClient} from '../websocket.js';
 import db from '../connection.js';
 import {MessageTypes} from '../types/message.js';
-import jwt from 'jsonwebtoken';
+import {timers} from "../handlers/queue.js";
 
 export async function createGame(p1, p2) {
   const game = await db.$transaction(async (prisma) => {
@@ -17,8 +17,9 @@ export async function createGame(p1, p2) {
 
     const gameId = newGame.id;
 
-    const opponentId = jwt.verify(p1.token, process.env.JWT_SECRET).user.id;
-    const clientId = jwt.verify(p2.token, process.env.JWT_SECRET).user.id;
+    const opponentId = p2.user.id;
+    const clientId = p1.user.id;
+    console.log(clientId, opponentId);
 
     const turn = Math.random() < 0.5;
 
@@ -51,6 +52,14 @@ export async function createGame(p1, p2) {
   const playerScore = playerScores.find((player) => player.user_id === p2.user.id);
   const opponentScore = playerScores.find((player) => player.user_id !== p2.user.id);
 
+  [p1.user.id, p2.user.id].forEach(userId => {
+    const interval = timers.get(userId);
+    if (interval) {
+      clearInterval(interval);
+      timers.delete(userId);
+    }
+  });
+
   const gameStartMessage = (player, opponent) => ({
     type: MessageTypes.GAME_START,
     game: game,
@@ -63,6 +72,13 @@ export async function createGame(p1, p2) {
 
   addGameClient({ client: p1.client, gameId: game.id, userId: opponentScore.user_id });
   addGameClient({ client: p2.client, gameId: game.id, userId: playerScore.user_id });
+
+  if (timers.has(p1.user.id)) {
+    timers.delete(p1.user.id);
+  }
+    if (timers.has(p2.user.id)) {
+        timers.delete(p2.user.id);
+    }
 }
 
 export async function resetDices(game) {

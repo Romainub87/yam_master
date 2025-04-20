@@ -17,6 +17,7 @@ import {
   handleGameReconnect
 } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
+import { timers } from './handlers/queue.js';
 
 let waitingClients = [];
 let gameClients = [];
@@ -33,9 +34,9 @@ const handlers = {
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
   [MessageTypes.DEFINITIVE_QUIT_GAME]: (ws, payload) => handleDefinitiveQuitGame(ws, payload),
   [MessageTypes.FORFEIT_GAME]: (ws, payload) => handleForfeit(ws, payload),
-  [MessageTypes.TIMER_UPDATE]: (ws, payload) => { handleTimerUpdate(ws, payload); },
-  [MessageTypes.SCORE_COMBINATION]: (ws, payload) => { handleScoreCombination(ws, payload); },
-  [MessageTypes.CHALLENGE]: (ws, payload) => { handleChallenge(ws, payload); },
+  [MessageTypes.TIMER_UPDATE]: (ws, payload) => handleTimerUpdate(ws, payload),
+  [MessageTypes.SCORE_COMBINATION]: (ws, payload) => handleScoreCombination(ws, payload),
+  [MessageTypes.CHALLENGE]: (ws, payload) => handleChallenge(ws, payload),
   [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
 };
 
@@ -71,6 +72,8 @@ export function setupWebSocket(server) {
     ws.on('close', () => {
       console.log('Client déconnecté');
       handleClientDisconnection(ws);
+      clearInterval(timers.get(ws.userId));
+      timers.delete(ws.userId);
     });
   });
 }
