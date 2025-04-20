@@ -28,7 +28,6 @@ const TurnTimer: React.FC<TimerProps> = ({ gameData }) => {
     }, [lastMessage]);
 
     useEffect(() => {
-        console.log(gameData.game);
         if (gameData && isCurrentTurn && gameData?.game?.status !== 'FINISHED') {
             if (timeLeft > 0) {
                 const interval = setInterval(() => {
