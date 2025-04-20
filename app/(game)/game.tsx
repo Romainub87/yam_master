@@ -24,6 +24,13 @@ export default function GameScreen() {
                     gameId: parseInt(params.id as string, 10),
                 },
             });
+            sendMessage({
+                type: 'game.reconnect',
+                payload: {
+                    userId: user.id,
+                    gameId: parseInt(params.id as string, 10),
+                },
+            });
         }
     }, [user, params.id, isConnected]);
 
@@ -63,6 +70,7 @@ export default function GameScreen() {
                         })
                     }
                 }
+
             } catch (error) {
                 console.error('Erreur lors du traitement du message WebSocket :', error);
             }
