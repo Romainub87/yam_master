@@ -21,4 +21,6 @@ export const MessageTypes = {
   TIMER_UPDATE: 'game.timerUpdate',
   SCORE_COMBINATION: 'game.scoreCombination',
   CHALLENGE: 'game.challenge',
+  GAME_WIN: 'game.win',
+  GAME_LOSE: 'game.lose',
 };

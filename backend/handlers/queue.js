@@ -10,13 +10,15 @@ import { MessageTypes } from '../types/message.js';
 import { tryMatchPlayers } from '../lib/matchmaking.js';
 import db from '../connection.js';
 
+export const timers = new Map();
+
 export async function handleQueueJoin(client, payload) {
-  const { user, token } = payload;
+  const { userId } = payload;
 
 
     const existingPlayerScore = await db.player_score.findFirst({
         where: {
-            user_id: user.id,
+            user_id: userId,
             game: {
                 status: 'IN_PROGRESS',
             },
@@ -25,10 +27,10 @@ export async function handleQueueJoin(client, payload) {
 
     if (existingPlayerScore) {
         const gameId = existingPlayerScore.game_id;
-        addGameClient({ client, gameId: gameId, userId: user.id });
+        addGameClient({ client, gameId: gameId, userId: userId });
 
         const opponentClient = getGameClients().find(
-            (gameClient) => gameId === gameClient.gameId && gameClient.userId !== user.id
+            (gameClient) => gameId === gameClient.gameId && gameClient.userId !== userId
         );
 
         if (opponentClient) {
@@ -38,16 +40,35 @@ export async function handleQueueJoin(client, payload) {
         return;
     }
 
+    let timeElapsed = 0; // Temps écoulé en secondes
+
+    // Démarrer un timer pour cet utilisateur
+    const interval = setInterval(() => {
+        timeElapsed += 1;
+        client.send(JSON.stringify({ type: 'queue.timer', time: timeElapsed }));
+    }, 1000);
+
+    timers.set(userId, interval);
+
+    const user = await db.users.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            username: true,
+            mmr: true,
+            hide_mmr: true
+        },
+    });
+
   // TODO: Use real value ranked
   const ranked = false;
-  const mmr = ranked ? user.mmr ?? 400 : user.hide_mmr ?? 400;
+  const mmr = ranked ? user.mmr : user.hide_mmr;
 
   const clientData = {
     client,
     user,
     mmr,
     ranked,
-    token,
     joinedAt: Date.now(),
   };
 
@@ -57,9 +78,17 @@ export async function handleQueueJoin(client, payload) {
   tryMatchPlayers(getWaitingClients());
 }
 
-export function handleQueueLeave(client) {
-  removeWaitingClient(client);
-  client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
+export function handleQueueLeave(client, payload) {
+    const { userId } = payload;
+    removeWaitingClient(client);
+
+    const interval = timers.get(userId);
+    if (interval) {
+        clearInterval(interval);
+        timers.delete(userId);
+    }
+
+    client.send(JSON.stringify({ type: MessageTypes.QUEUE_LEAVE }));
 }
 
 export function handleClientDisconnection(client) {

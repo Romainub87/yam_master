@@ -6,14 +6,18 @@ import { useRouter } from 'expo-router';
 import { useWebSocket } from '@/context/WebSocketContext';
 
 export default function HomeScreen() {
-  const { user, userToken, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { sendMessage, lastMessage } = useWebSocket();
   const router = useRouter();
   const [isSearching, setIsSearching] = useState(false);
+    const [timeElapsed, setTimeElapsed] = useState(null);
 
   useEffect(() => {
     if (lastMessage) {
       try {
+        if (lastMessage.type === 'queue.timer') {
+          setTimeElapsed(lastMessage.time);
+        }
         if (lastMessage.type === 'queue.added') {
           setIsSearching(true);
         }
@@ -36,8 +40,7 @@ export default function HomeScreen() {
     sendMessage({
       type: 'queue.join',
       payload: {
-        user: user,
-        token: userToken,
+        userId: user?.id,
       },
     });
   };
@@ -46,10 +49,11 @@ export default function HomeScreen() {
     sendMessage({
       type: 'queue.leave',
       payload: {
-        token: userToken,
+        userId: user?.id,
       },
     });
     setIsSearching(false);
+    setTimeElapsed(null);
   };
 
   return (
@@ -60,6 +64,11 @@ export default function HomeScreen() {
               {isSearching ? (
                   <View className="items-center">
                     <Text className="text-lg text-gray-300 mb-4">🔍 Recherche de parties en cours...</Text>
+                    {timeElapsed !== null && (
+                        <Text className="text-sm text-gray-300 mb-4">
+                          Temps écoulé : {timeElapsed} secondes
+                        </Text>
+                    )}
                     <CustomButton title="Annuler" onPress={() => leaveQueue()} />
                   </View>
               ) : (

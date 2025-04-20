@@ -30,6 +30,7 @@ model game {
   dice_state    Json
   status        String
   timer         Int
+  isRanked      Boolean        @default(false)
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
   player_scores player_score[]

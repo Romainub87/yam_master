@@ -243,7 +243,14 @@ export async function handleForfeit(client, payload) {
 
 export async function handleTimerUpdate(client, payload) {
     const { gameId, time } = payload;
-    const game = await db.game.update({
+
+    const game = await db.game.findUnique({ where: { id: gameId } });
+    if (!game || game.status !== 'IN_PROGRESS') {
+        client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Partie introuvable ou statut incorrect' }));
+        return;
+    }
+
+    const updatedGame = await db.game.update({
         where: { id: gameId },
         data: {
             timer: time - 1,
@@ -252,7 +259,7 @@ export async function handleTimerUpdate(client, payload) {
 
     client.send(JSON.stringify({
         type: MessageTypes.TIMER_UPDATE,
-        time: game.timer,
+        time: updatedGame.timer,
     }));
 }
 
@@ -301,9 +308,11 @@ export async function handleScoreCombination(client, payload) {
         where: { game_id_user_id: { game_id: gameId, user_id: opponentUserId } },
     });
 
-    await Promise.all(playerScores.map(player => checkAlignmentsAndUpdateScores(gameId, player.user_id)));
-
     const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId);
+
+    await Promise.all(playerScores.map(player => checkAlignmentsAndUpdateScores(gameId, player.user_id, client, gameClient)));
+
+
     if (gameClient) {
         gameClient.client.send(JSON.stringify({
             type: MessageTypes.OPPONENT_UPDATE,

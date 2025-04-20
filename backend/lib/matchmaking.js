@@ -6,24 +6,19 @@ export function tryMatchPlayers(waitingClients) {
   waitingClients.sort((a, b) => a.mmr - b.mmr);
 
   for (let i = 0; i < waitingClients.length - 1; i++) {
-    const p1 = waitingClients[i];
-    const p2 = waitingClients[i + 1];
-
+    const [p1, p2] = [waitingClients[i], waitingClients[i + 1]];
     const mmrDiff = Math.abs(p1.mmr - p2.mmr);
-    const timeWaited = Math.max(
-      Date.now() - p1.joinedAt,
-      Date.now() - p2.joinedAt
-    );
+    const timeWaited = Date.now() - Math.min(p1.joinedAt, p2.joinedAt);
+    const tolerance = 20 + (timeWaited / 20000) * Math.exp(Math.pow(timeWaited / 1000, 0.154));
 
-    const second = timeWaited / 1000;
-    const tolerance = 20 + (second / 20) * Math.exp(Math.pow(second, 0.154));
+    console.log(mmrDiff, tolerance, timeWaited);
 
-    if (p1.ranked === p2.ranked && mmrDiff <= tolerance) {
+    if (p1.ranked === p2.ranked && mmrDiff <= tolerance && p1.user.id !== p2.user.id) {
+      console.log(`Match trouvé entre ${p1.user.username} et ${p2.user.username} avec une différence de MMR de ${mmrDiff}`);
       waitingClients.splice(i, 2);
-      removeWaitingClient(p1);
-      removeWaitingClient(p2);
+      [p1, p2].forEach(removeWaitingClient);
       createGame(p1, p2);
-      i--; // car on a retiré deux éléments
+      i--;
       console.log('Partie démarrée entre deux clients');
     }
   }

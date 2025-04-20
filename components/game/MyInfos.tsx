@@ -10,7 +10,7 @@ interface MyInfosProps {
     gameData: any;
 }
 
-const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
+const MyInfos: React.FC<MyInfosProps> = ({ gameData }) => {
     const { sendMessage, lastMessage } = useWebSocket();
     const { user } = useAuth();
     const [playerScore, setPlayerScore] = useState<any>(gameData?.playerScore);
@@ -94,7 +94,7 @@ const MyInfos: React.FC<MyInfosProps> = ({gameData }) => {
                         <>
                             <View className="my-2 flex-col justify-center items-center w-full">
                                 <Text className="text-gray-300 mb-4">Lancers restants : {playerScore.rolls_left}</Text>
-                                <DiceRoller rolls_left={playerScore.rolls_left} diceValues={gameData.dice} gameId={gameData?.game?.id} />
+                                <DiceRoller rolls_left={playerScore.rolls_left} diceValues={gameData?.dice || gameData?.game?.dice_state} gameId={gameData?.game?.id} />
                             </View>
                         </>
                     )}

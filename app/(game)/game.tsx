@@ -8,12 +8,15 @@ import MyInfos from '@/components/game/MyInfos';
 import { GameData } from '@/models/GameData';
 import { useWebSocket } from '@/context/WebSocketContext';
 import TurnTimer from '@/components/game/TurnTimer';
+import WinLoseModal from "@/components/game/WinLoseModal";
+import { router } from "expo-router";
 
 export default function GameScreen() {
     const {user } = useAuth();
     const { sendMessage, lastMessage, isConnected } = useWebSocket();
     const [gameData, setGameData] = useState<GameData>({} as GameData);
     const params = useLocalSearchParams();
+    const [showModal, setShowModal] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
     useEffect(() => {
         if (user && params.id && isConnected) {
@@ -70,12 +73,29 @@ export default function GameScreen() {
                         })
                     }
                 }
-
+                if (lastMessage.type === 'game.win' || lastMessage.type === 'game.lose') {
+                    setShowModal({
+                        visible: true,
+                        message: lastMessage.type === 'game.win' ? 'Vous avez gagné !' : 'Vous avez perdu.',
+                    });
+                    setGameData({} as GameData);
+                }
+                if (
+                    lastMessage.type === 'game.definitiveQuit' ||
+                    lastMessage.type === 'player.ff'
+                ) {
+                    setGameData({} as GameData);
+                }
             } catch (error) {
                 console.error('Erreur lors du traitement du message WebSocket :', error);
             }
         }
     }, [lastMessage]);
+
+    const handleEndGame = () => {
+        setShowModal({ ...showModal, visible: false });
+        router.push('/');
+    }
 
     return (
         <View className="flex justify-between items-center h-full bg-black">
@@ -83,6 +103,7 @@ export default function GameScreen() {
             <TurnTimer gameData={gameData}/>
             <GameGrid gameData={gameData} />
             <MyInfos gameData={gameData} />
+            <WinLoseModal visible={showModal.visible} message={showModal.message} onClose={() => handleEndGame()} />
         </View>
     );
 }
