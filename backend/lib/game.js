@@ -305,20 +305,24 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
     }
 
 
-    if (isRanked) {
-      updateMMR(userId, gameId, true); // Met à jour le MMR du gagnant
-      updateMMR(opponentClient.userId, gameId, false); // Met à jour le MMR du perdant
+    if (!isRanked) {
+      await updateMMR(userId, gameId, true);
+      await updateMMR(opponentClient.userId, gameId, false);
     }
   }
 
   return alignments;
 }
 
-function updateMMR(userId, gameId, isWinner) {
-    const mmrChange = isWinner ? 9 : -9; // Exemple de changement de MMR
-    return db.player_score.update({
-        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
-        data: { mmr: { increment: mmrChange } },
-    });
+async function updateMMR(userId, gameId, isWinner) {
+  const mmrChange = isWinner ? 9 : -9; // Exemple de changement de MMR
+  return db.users.update({
+    where: {id: userId},
+    data: {
+      hide_mmr: {
+        increment: mmrChange,
+      },
+    },
+  });
 }
 
