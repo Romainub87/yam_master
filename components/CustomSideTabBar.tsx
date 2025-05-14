@@ -21,7 +21,7 @@ export default function CustomSideTabBar({
         left: 0,
         backgroundColor: Colors[colorScheme!]['yam-background'],
         paddingVertical: 20,
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         justifyContent: 'space-between',
       }}
     >
@@ -53,7 +53,9 @@ export default function CustomSideTabBar({
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginVertical: 15,
+                paddingVertical: 5,
+                marginVertical: 10,
+                paddingLeft: 5,
                 opacity: isFocused ? 1 : 0.5,
               }}
             >

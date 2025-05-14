@@ -70,56 +70,97 @@ export default function HomeScreen() {
       className="flex-1"
       resizeMode="cover"
     >
-      <View className="flex justify-center items-center min-h-screen w-full">
+      <View className="flex flex-col items-center min-h-screen ml-[158px] p-8 gap-20">
         {user ? (
-          <View
-            className="flex flex-col p-10 rounded-xl lg:w-1/3 space-y-4"
-            style={{
-              backgroundColor: Colors[colorScheme!]['yam-background'],
-            }}
-          >
+          <>
             <Text
-              className="text-4xl font-bold text-center"
+              className="text-4xl font-bold text-start w-full"
               style={{ color: Colors[colorScheme!]['yam-default'] }}
             >
               Bienvenue, {user.username} 👋
             </Text>
+            <View
+              className="flex flex-col px-10 py-8 rounded-xl md:min-w-[400px] lg:min-w-[600px] space-y-4"
+              style={{
+                backgroundColor: Colors[colorScheme!]['yam-background'],
+              }}
+            >
+              <View className="space-y-6">
+                <Text
+                  className="text-base"
+                  style={{
+                    color: Colors[colorScheme!]['yam-default'],
+                    fontSize: 22,
+                    fontWeight: 700,
+                  }}
+                >
+                  🏆 MMR : {user.mmr !== null ? user.mmr : 'Non classé'}
+                </Text>
+              </View>
 
-            <View className="mt-2 space-y-2">
+              <View className="my-6">
+                {isSearching ? (
+                  <>
+                    <View className="items-center space-y-2 mt-4">
+                      <Text
+                        className="text-lg"
+                        style={{ color: Colors[colorScheme!]['yam-default'] }}
+                      >
+                        🔍 Recherche de parties en cours...
+                      </Text>
+                      {timeElapsed !== null && (
+                        <Text
+                          className="text-sm"
+                          style={{ color: Colors[colorScheme!]['yam-default'] }}
+                        >
+                          Temps écoulé : {timeElapsed} secondes
+                        </Text>
+                      )}
+                    </View>
+                    <View className="w-full flex items-center mt-5">
+                      <CustomButton
+                        title="Annuler"
+                        onPress={leaveQueue}
+                        className="w-full max-w-[250px]"
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <View className="w-full flex items-center">
+                    <CustomButton
+                      title="Jouer"
+                      onPress={joinQueue}
+                      className="w-full max-w-[420px]"
+                    />
+                  </View>
+                )}
+              </View>
+            </View>
+            <View
+              className="flex flex-col p-10 rounded-xl md:min-w-[500px] lg:min-w-[700px] space-y-7"
+              style={{
+                backgroundColor: Colors[colorScheme!]['yam-background'],
+              }}
+            >
               <Text
                 className="text-base"
-                style={{ color: Colors[colorScheme!]['yam-default'] }}
+                style={{
+                  color: Colors[colorScheme!]['yam-default'],
+                  fontSize: 22,
+                  fontWeight: 700,
+                }}
               >
-                🏆 MMR : {user.mmr !== null ? user.mmr : 'Non classé'}
+                Historique des parties
               </Text>
+              <View
+                style={{
+                  backgroundColor: Colors[colorScheme!]['yam-default'],
+                  opacity: 0.6,
+                  height: 1,
+                }}
+              ></View>
             </View>
-
-            <View className="my-6">
-              {isSearching ? (
-                <View className="items-center space-y-2">
-                  <Text
-                    className="text-lg"
-                    style={{ color: Colors[colorScheme!]['yam-default'] }}
-                  >
-                    🔍 Recherche de parties en cours...
-                  </Text>
-                  {timeElapsed !== null && (
-                    <Text
-                      className="text-sm"
-                      style={{ color: Colors[colorScheme!]['yam-default'] }}
-                    >
-                      Temps écoulé : {timeElapsed} secondes
-                    </Text>
-                  )}
-                  <CustomButton title="Annuler" onPress={leaveQueue} />
-                </View>
-              ) : (
-                <CustomButton title="Jouer" onPress={joinQueue} />
-              )}
-            </View>
-
-            <CustomButton title="Se déconnecter" onPress={logout} />
-          </View>
+          </>
         ) : (
           <Text
             className="text-lg"
