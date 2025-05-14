@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  ImageBackground,
+  useWindowDimensions,
+} from 'react-native';
 import {
   faDiceFive,
   faDiceFour,
@@ -30,6 +37,8 @@ export default function GameGrid({ gameData }: GridProps) {
   );
   const { sendMessage, lastMessage } = useWebSocket();
   const colorScheme = useColorScheme();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 1024;
 
   useEffect(() => {
     setGridData(gameData?.game?.grid_state || []);
@@ -71,68 +80,90 @@ export default function GameGrid({ gameData }: GridProps) {
       {gridData.map((row, rowIndex) => (
         <View key={rowIndex} className="flex flex-row">
           {row.map((cell, colIndex) => (
-            <TouchableOpacity
-              key={colIndex}
-              onPress={() => {
-                handleScoreCombination(rowIndex, colIndex, cell.combination);
-              }}
-              className={`w-16 h-16 border flex items-center justify-center`}
-              style={{
-                backgroundColor: cell.user
-                  ? cell?.user === user?.id
-                    ? '#1182da'
-                    : Colors[colorScheme!]['yam-error']
-                  : Array.isArray(combinations) &&
-                    cell.combination &&
-                    combinations.includes(cell.combination)
-                  ? Colors[colorScheme!]['yam-primary']
-                  : 'white',
-              }}
-              disabled={
-                !!cell.user ||
-                !Array.isArray(combinations) ||
-                !cell.combination ||
-                !combinations.includes(cell.combination)
+            <ImageBackground
+              source={
+                !cell.user
+                  ? require('@/assets/images/white_case.png')
+                  : undefined
               }
+              resizeMode="cover"
+              style={{
+                width: isLargeScreen ? 80 : 60,
+                height: isLargeScreen ? 80 : 60,
+              }}
             >
-              {cell && cell.combination?.includes('WITH') ? (
-                <Text className="text-2xl p-5 text-center">
-                  <FontAwesomeIcon
-                    icon={
-                      cell.combination === Combination.WITH1
-                        ? faDiceOne
-                        : cell.combination === Combination.WITH2
-                        ? faDiceTwo
-                        : cell.combination === Combination.WITH3
-                        ? faDiceThree
-                        : cell.combination === Combination.WITH4
-                        ? faDiceFour
-                        : cell.combination === Combination.WITH5
-                        ? faDiceFive
-                        : faDiceSix
-                    }
-                  />
-                </Text>
-              ) : (
-                <Text className="text-lg p-5 text-center font-bold">
-                  {cell?.combination === Combination.FULL
-                    ? 'FULL'
-                    : cell?.combination === Combination.SEC
-                    ? '🔫'
-                    : cell?.combination === Combination.DEFI
-                    ? '⚔️'
-                    : cell?.combination === Combination.YAM
-                    ? '🎯'
-                    : cell?.combination === Combination.CARRE
-                    ? '[ ]'
-                    : cell?.combination === Combination.LESS8
-                    ? '≤8'
-                    : cell?.combination === Combination.SUITE
-                    ? '📏'
-                    : cell?.combination || ''}
-                </Text>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  handleScoreCombination(rowIndex, colIndex, cell.combination)
+                }
+                className="w-full h-full border flex items-center justify-center"
+                style={{
+                  backgroundColor: cell.user
+                    ? cell?.user === user?.id
+                      ? '#1182da'
+                      : Colors[colorScheme!]['yam-error']
+                    : Array.isArray(combinations) &&
+                      cell.combination &&
+                      combinations.includes(cell.combination)
+                    ? Colors[colorScheme!]['yam-primary']
+                    : 'transparent',
+                }}
+                disabled={
+                  !!cell.user ||
+                  !Array.isArray(combinations) ||
+                  !cell.combination ||
+                  !combinations.includes(cell.combination)
+                }
+              >
+                {cell && cell.combination?.includes('WITH') ? (
+                  <Text
+                    className="p-5 text-center"
+                    style={{
+                      fontSize: isLargeScreen ? 24 : 20,
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={
+                        cell.combination === Combination.WITH1
+                          ? faDiceOne
+                          : cell.combination === Combination.WITH2
+                          ? faDiceTwo
+                          : cell.combination === Combination.WITH3
+                          ? faDiceThree
+                          : cell.combination === Combination.WITH4
+                          ? faDiceFour
+                          : cell.combination === Combination.WITH5
+                          ? faDiceFive
+                          : faDiceSix
+                      }
+                    />
+                  </Text>
+                ) : (
+                  <Text
+                    className="p-5 text-center font-bold"
+                    style={{
+                      fontSize: isLargeScreen ? 24 : 17,
+                    }}
+                  >
+                    {cell?.combination === Combination.FULL
+                      ? 'FULL'
+                      : cell?.combination === Combination.SEC
+                      ? '🔫'
+                      : cell?.combination === Combination.DEFI
+                      ? '⚔️'
+                      : cell?.combination === Combination.YAM
+                      ? '🎯'
+                      : cell?.combination === Combination.CARRE
+                      ? '[ ]'
+                      : cell?.combination === Combination.LESS8
+                      ? '≤8'
+                      : cell?.combination === Combination.SUITE
+                      ? '📏'
+                      : cell?.combination || ''}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </ImageBackground>
           ))}
         </View>
       ))}

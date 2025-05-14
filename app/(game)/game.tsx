@@ -126,7 +126,7 @@ export default function GameScreen() {
       resizeMode="cover"
     >
       <ScrollView>
-        <View className="flex flex-col items-center min-h-screen p-8 gap-10 border border-red-500">
+        <View className="flex flex-col items-center min-h-screen p-8 gap-10">
           <Text
             className="text-4xl font-bold text-center w-full"
             style={{ color: Colors[colorScheme!]['yam-default'] }}
@@ -134,14 +134,15 @@ export default function GameScreen() {
             Partie en cours 🎲
           </Text>
           <View
-            className="flex-1 w-full border border-blue-500 justify-around items-center gap-10"
+            className="flex-1 w-full justify-around items-center gap-10"
             style={{
               flexDirection: isLargeScreen ? 'row' : 'column',
+              maxWidth: 1230,
             }}
           >
             <GameGrid gameData={gameData} />
             <View
-              className="flex flex-1 flex-col border border-green-500 w-full items-center"
+              className="flex flex-1 flex-col w-full items-center"
               style={{
                 maxWidth: 550,
                 gap: 30,

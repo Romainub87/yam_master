@@ -102,7 +102,11 @@ const MyInfos: React.FC<MyInfosProps> = ({ gameData }) => {
     >
       <Text
         className="text-white text-lg font-bold justify-center flex p-3"
-        style={{ backgroundColor: Colors[colorScheme!]['yam-background-2'] }}
+        style={{
+          backgroundColor: Colors[colorScheme!]['yam-background-2'],
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        }}
       >
         Moi
       </Text>
