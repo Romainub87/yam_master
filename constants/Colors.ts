@@ -17,7 +17,7 @@ export const Colors = {
     'yam-default': '#FFFFFF', // white
     'yam-base': '#242E33', // black
     'yam-background': 'rgba(0, 0, 0, 0.2)', // color brown wood
-    'yam-background-2': 'rgba(0, 0, 0, 0.14)', // color brown wood
+    'yam-background-2': 'rgba(0, 0, 0, 0.2)', // color brown wood
     'yam-primary': '#81b64c', // green
     'yam-info': '#4dc3ea', // blue
     'yam-error': '#fa412d', // red
@@ -32,7 +32,7 @@ export const Colors = {
     'yam-default': '#242E33', // black
     'yam-base': '#FFFFFF', // white
     'yam-background': 'rgba(0, 0, 0, 0.2)', // color brown wood
-    'yam-background-2': 'rgba(0, 0, 0, 0.14)', // color brown wood
+    'yam-background-2': 'rgba(0, 0, 0, 0.2)', // color brown wood
     'yam-primary': '#81b64c', // green
     'yam-info': '#4dc3ea', // blue
     'yam-error': '#fa412d', // red
