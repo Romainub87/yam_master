@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text } from 'react-native';
+import {
+  View,
+  TextInput,
+  Text,
+  ImageBackground,
+  useColorScheme,
+} from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Link } from 'expo-router';
 import CustomButton from '@/components/CustomButton';
+import { Colors } from '@/constants/Colors';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
+  const colorScheme = useColorScheme();
 
   const handleLogin = async () => {
     try {
@@ -32,30 +40,58 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-gray-900">
-      <Text className="text-4xl font-bold text-white mb-6">Connexion</Text>
-      <TextInput
-        className="w-3/4 md:w-1/6 p-3 mb-4 bg-gray-800 text-white rounded"
-        placeholder="Nom d'utilisateur"
-        placeholderTextColor="#A0AEC0"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        className="w-3/4 md:w-1/6 p-3 mb-4 bg-gray-800 text-white rounded"
-        placeholder="Mot de passe"
-        placeholderTextColor="#A0AEC0"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <CustomButton title="Se connecter" onPress={handleLogin} />
-      <Text className="text-white text-center font-medium mt-4">
-        Pas encore de compte ?{' '}
-        <Link className="font-bold" href="/register">
-          S'inscrire
-        </Link>
-      </Text>
-    </View>
+    <ImageBackground
+      source={require('@/assets/images/background.jpg')}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      <View className="flex justify-center items-center min-h-screen w-full border-2">
+        <View
+          className="flex flex-col p-10 rounded-xl lg:w-1/3"
+          style={{
+            backgroundColor: Colors[colorScheme!]['yam-background'],
+          }}
+        >
+          <Text
+            className="text-center text-4xl font-bold mb-16"
+            style={{
+              color: Colors[colorScheme!]['yam-default'],
+            }}
+          >
+            Connexion
+          </Text>
+          <TextInput
+            className="w-full p-3 mb-4 rounded focus:outline-none"
+            placeholder="Nom d'utilisateur"
+            placeholderTextColor="#A0AEC0"
+            value={username}
+            onChangeText={setUsername}
+            style={{
+              backgroundColor: Colors[colorScheme!]['yam-background-2'],
+              color: Colors[colorScheme!]['yam-default'],
+            }}
+          />
+          <TextInput
+            className="w-full p-3 mb-4 rounded focus:outline-none"
+            placeholder="Mot de passe"
+            placeholderTextColor="#A0AEC0"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={{
+              backgroundColor: Colors[colorScheme!]['yam-background-2'],
+              color: Colors[colorScheme!]['yam-default'],
+            }}
+          />
+          <CustomButton title="Se connecter" onPress={handleLogin} />
+          <Text className="text-white text-center font-medium mt-4">
+            Pas encore de compte ?{' '}
+            <Link className="font-bold" href="/register">
+              S'inscrire
+            </Link>
+          </Text>
+        </View>
+      </View>
+    </ImageBackground>
   );
 }

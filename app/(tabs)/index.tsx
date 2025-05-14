@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ImageBackground, useColorScheme } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import CustomButton from '@/components/CustomButton';
 import { useRouter } from 'expo-router';
 import { useWebSocket } from '@/context/WebSocketContext';
+import { Colors } from '@/constants/Colors';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
   const { sendMessage, lastMessage } = useWebSocket();
   const router = useRouter();
+  const colorScheme = useColorScheme();
   const [isSearching, setIsSearching] = useState(false);
-    const [timeElapsed, setTimeElapsed] = useState(null);
+  const [timeElapsed, setTimeElapsed] = useState<number | null>(null);
 
   useEffect(() => {
     if (lastMessage) {
@@ -22,10 +24,16 @@ export default function HomeScreen() {
           setIsSearching(true);
         }
         if (lastMessage.type === 'game.start') {
-          router.push({ pathname: '/game', params: { id: lastMessage.game.id } });
+          router.push({
+            pathname: '/game',
+            params: { id: lastMessage.game.id },
+          });
         }
         if (lastMessage.type === 'game.reconnect') {
-          router.push({ pathname: '/game', params: { id: lastMessage.gameId } });
+          router.push({
+            pathname: '/game',
+            params: { id: lastMessage.gameId },
+          });
         }
       } catch (error) {
         console.error(
@@ -57,28 +65,111 @@ export default function HomeScreen() {
   };
 
   return (
-      <View className="flex-1 justify-center items-center bg-black">
+    <ImageBackground
+      source={require('@/assets/images/background.jpg')}
+      className="flex-1"
+      resizeMode="cover"
+    >
+      <View className="flex flex-col items-center min-h-screen ml-[158px] p-8 gap-20">
         {user ? (
-            <View className="items-center p-6 rounded-lg shadow-lg">
-              <Text className="text-4xl text-white mb-6 font-bold">Bienvenue, {user.username} 👋</Text>
-              {isSearching ? (
-                  <View className="items-center">
-                    <Text className="text-lg text-gray-300 mb-4">🔍 Recherche de parties en cours...</Text>
-                    {timeElapsed !== null && (
-                        <Text className="text-sm text-gray-300 mb-4">
+          <>
+            <Text
+              className="text-4xl font-bold text-start w-full"
+              style={{ color: Colors[colorScheme!]['yam-default'] }}
+            >
+              Bienvenue, {user.username} 👋
+            </Text>
+            <View
+              className="flex flex-col px-10 py-8 rounded-xl md:min-w-[400px] lg:min-w-[600px] space-y-4"
+              style={{
+                backgroundColor: Colors[colorScheme!]['yam-background'],
+              }}
+            >
+              <View className="space-y-6">
+                <Text
+                  className="text-base"
+                  style={{
+                    color: Colors[colorScheme!]['yam-default'],
+                    fontSize: 22,
+                    fontWeight: 700,
+                  }}
+                >
+                  🏆 MMR : {user.mmr !== null ? user.mmr : 'Non classé'}
+                </Text>
+              </View>
+
+              <View className="my-6">
+                {isSearching ? (
+                  <>
+                    <View className="items-center space-y-2 mt-4">
+                      <Text
+                        className="text-lg"
+                        style={{ color: Colors[colorScheme!]['yam-default'] }}
+                      >
+                        🔍 Recherche de parties en cours...
+                      </Text>
+                      {timeElapsed !== null && (
+                        <Text
+                          className="text-sm"
+                          style={{ color: Colors[colorScheme!]['yam-default'] }}
+                        >
                           Temps écoulé : {timeElapsed} secondes
                         </Text>
-                    )}
-                    <CustomButton title="Annuler" onPress={() => leaveQueue()} />
+                      )}
+                    </View>
+                    <View className="w-full flex items-center mt-5">
+                      <CustomButton
+                        title="Annuler"
+                        onPress={leaveQueue}
+                        className="w-full max-w-[250px]"
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <View className="w-full flex items-center">
+                    <CustomButton
+                      title="Jouer"
+                      onPress={joinQueue}
+                      className="w-full max-w-[420px]"
+                    />
                   </View>
-              ) : (
-                  <CustomButton title="Jouer" onPress={() => joinQueue()} />
-              )}
-              <CustomButton title="Se déconnecter" onPress={logout} />
+                )}
+              </View>
             </View>
+            <View
+              className="flex flex-col p-10 rounded-xl md:min-w-[500px] lg:min-w-[700px] space-y-7"
+              style={{
+                backgroundColor: Colors[colorScheme!]['yam-background'],
+              }}
+            >
+              <Text
+                className="text-base"
+                style={{
+                  color: Colors[colorScheme!]['yam-default'],
+                  fontSize: 22,
+                  fontWeight: 700,
+                }}
+              >
+                Historique des parties
+              </Text>
+              <View
+                style={{
+                  backgroundColor: Colors[colorScheme!]['yam-default'],
+                  opacity: 0.6,
+                  height: 1,
+                }}
+              ></View>
+            </View>
+          </>
         ) : (
-            <Text className="text-lg text-gray-300">Veuillez vous connecter pour continuer</Text>
+          <Text
+            className="text-lg"
+            style={{ color: Colors[colorScheme!]['yam-default'] }}
+          >
+            Veuillez vous connecter pour continuer
+          </Text>
         )}
       </View>
+    </ImageBackground>
   );
 }
