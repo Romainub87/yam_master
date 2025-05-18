@@ -49,9 +49,20 @@ export default function HomeScreen() {
       type: 'queue.join',
       payload: {
         userId: user?.id,
+        ranked: false,
       },
     });
   };
+
+    const joinRankedQueue = () => {
+        sendMessage({
+        type: 'queue.join',
+        payload: {
+            userId: user?.id,
+            ranked: true,
+        },
+        });
+    };
 
   const leaveQueue = () => {
     sendMessage({
@@ -132,6 +143,11 @@ export default function HomeScreen() {
                       onPress={joinQueue}
                       className="w-full max-w-[420px]"
                     />
+                    <CustomButton
+                        title={"Jouer en classé"}
+                        onPress={joinRankedQueue}
+                        className="w-full max-w-[420px] mt-4"
+                        />
                   </View>
                 )}
               </View>
