@@ -13,15 +13,13 @@ import db from '../connection.js';
 export const timers = new Map();
 
 export async function handleQueueJoin(client, payload) {
-  const { userId, ranked } = payload;
-
+   const { userId, ranked } = payload;
 
     const existingPlayerScore = await db.player_score.findFirst({
         where: {
             user_id: userId,
             game: {
-                status: 'IN_PROGRESS',
-                isRanked: ranked
+                status: 'IN_PROGRESS'
             },
         },
     });

@@ -12,6 +12,7 @@ export async function createGame(p1, p2) {
         dice_state: Array(5).fill({ value: null, locked: false }),
         timer: 20,
         status: 'IN_PROGRESS',
+        isRanked: p1.ranked,
       },
     });
 
