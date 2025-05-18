@@ -19,7 +19,6 @@ export async function createGame(p1, p2) {
 
     const opponentId = p2.user.id;
     const clientId = p1.user.id;
-    console.log(clientId, opponentId);
 
     const turn = Math.random() < 0.5;
 
@@ -227,7 +226,9 @@ export async function checkAlignmentsAndUpdateScores(gameId, userId, client, opp
   }
 
   const grid = game.grid_state;
-  const alignments = checkAlignments(grid, userId, gameId, game.isRanked, client, opponentClient);
+  const alignments = await checkAlignments(grid, userId, gameId, game.isRanked, client, opponentClient);
+
+  console.log(alignments);
 
   if (alignments > 0) {
     await db.player_score.update({
@@ -241,37 +242,33 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
   let alignments = 0;
   let hasWon = false;
 
-  // Helper function to calculate alignment score
   const calculateAlignmentScore = (count) => {
     if (count === 5) {
-      hasWon = true; // Détecte un alignement de 5
-      return 3; // Exemple de score pour 5 cellules consécutives
+      hasWon = true;
+      return 3;
     }
     if (count === 4) return 2;
     if (count === 3) return 1;
     return 0;
   };
 
-  // Check rows and columns (similaire à avant)
   const checkRowColumn = (cells) => {
     let consecutive = 0;
     cells.forEach(cell => {
       consecutive = (cell.user === userId) ? consecutive + 1 : 0;
       if (consecutive >= 3) {
         alignments += calculateAlignmentScore(consecutive);
-        if (hasWon) return; // Arrête si victoire détectée
+        if (hasWon) return;
       }
     });
   };
 
-  // Vérifie toutes les lignes
   grid.forEach(row => checkRowColumn(row));
 
-  // Vérifie toutes les colonnes
   for (let col = 0; col < grid[0].length; col++) {
     let column = grid.map(row => row[col]);
     checkRowColumn(column);
-    if (hasWon) break; // Arrête si victoire détectée
+    if (hasWon) break;
   }
 
   // Vérifie les diagonales
@@ -282,23 +279,21 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
       consecutive = (grid[row][col].user === userId) ? consecutive + 1 : 0;
       if (consecutive >= 3) {
         alignments += calculateAlignmentScore(consecutive);
-        if (hasWon) return; // Arrête si victoire détectée
+        if (hasWon) return;
       }
       row += rowIncrement;
       col += colIncrement;
     }
   };
 
-  // Vérifie toutes les diagonales possibles
+  // Vérifie toutes les diagonales principales possibles
   for (let i = 0; i < grid.length; i++) {
-    checkDiagonal(i, 0, 1, 1); // Diagonales principales à partir de la première colonne
-    checkDiagonal(i, 0, -1, 1); // Anti-diagonales à partir de la première colonne
-    if (hasWon) break; // Arrête si victoire détectée
+    checkDiagonal(i, 0, 1, 1);
+    if (hasWon) break;
   }
   for (let j = 1; j < grid[0].length; j++) {
-    checkDiagonal(0, j, 1, 1); // Diagonales principales à partir de la première ligne
-    checkDiagonal(0, j, 1, -1); // Anti-diagonales à partir de la première ligne
-    if (hasWon) break; // Arrête si victoire détectée
+    checkDiagonal(0, j, 1, 1);
+    if (hasWon) break;
   }
 
   // Si un alignement de 5 est détecté, envoie les messages et met à jour le MMR

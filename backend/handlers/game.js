@@ -309,24 +309,29 @@ export async function handleScoreCombination(client, payload) {
     });
 
     const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId);
-
     await Promise.all(playerScores.map(player => checkAlignmentsAndUpdateScores(gameId, player.user_id, client, gameClient)));
 
+    const updatedPlayerScore = await db.player_score.findUnique({
+        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+    });
+    const updatedOpponentScore = await db.player_score.findUnique({
+        where: { game_id_user_id: { game_id: gameId, user_id: opponentUserId } },
+    });
 
     if (gameClient) {
         gameClient.client.send(JSON.stringify({
             type: MessageTypes.OPPONENT_UPDATE,
             game: game,
-            playerScore: playerScore,
-            opponentScore: opponentScore,
+            playerScore: updatedPlayerScore,
+            opponentScore: updatedOpponentScore,
         }));
     }
 
     client.send(JSON.stringify({
         type: MessageTypes.SCORE_COMBINATION,
         game: game,
-        playerScore: playerScore,
-        opponentScore: opponentScore,
+        playerScore: updatedPlayerScore,
+        opponentScore: updatedOpponentScore,
     }));
 }
 
