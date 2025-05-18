@@ -228,8 +228,6 @@ export async function checkAlignmentsAndUpdateScores(gameId, userId, client, opp
   const grid = game.grid_state;
   const alignments = await checkAlignments(grid, userId, gameId, game.isRanked, client, opponentClient);
 
-  console.log(alignments);
-
   if (alignments > 0) {
     await db.player_score.update({
       where: { game_id_user_id: { game_id: gameId, user_id: userId } },
@@ -315,25 +313,33 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
       }));
     }
 
-
-    if (!isRanked) {
-      await updateMMR(userId, gameId, true);
-      await updateMMR(opponentClient.userId, gameId, false);
-    }
+    await updateMMR(userId, gameId, true, isRanked);
+    await updateMMR(opponentClient.userId, gameId, false, isRanked);
   }
 
   return alignments;
 }
 
-async function updateMMR(userId, gameId, isWinner) {
-  const mmrChange = isWinner ? 9 : -9; // Exemple de changement de MMR
-  return db.users.update({
-    where: {id: userId},
-    data: {
-      hide_mmr: {
-        increment: mmrChange,
+async function updateMMR(userId, gameId, isWinner, isRanked) {
+  const mmrChange = isWinner ? 9 : -9;
+  if (isRanked) {
+    return db.users.update({
+      where: { id: userId },
+      data: {
+        mmr: {
+          increment: mmrChange,
+        },
       },
-    },
-  });
+    });
+  } else {
+    return db.users.update({
+      where: { id: userId },
+      data: {
+        hide_mmr: {
+          increment: mmrChange,
+        },
+      },
+    });
+  }
 }
 

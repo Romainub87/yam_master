@@ -13,7 +13,7 @@ import db from '../connection.js';
 export const timers = new Map();
 
 export async function handleQueueJoin(client, payload) {
-  const { userId } = payload;
+  const { userId, ranked } = payload;
 
 
     const existingPlayerScore = await db.player_score.findFirst({
@@ -21,6 +21,7 @@ export async function handleQueueJoin(client, payload) {
             user_id: userId,
             game: {
                 status: 'IN_PROGRESS',
+                isRanked: ranked
             },
         },
     });
@@ -40,9 +41,8 @@ export async function handleQueueJoin(client, payload) {
         return;
     }
 
-    let timeElapsed = 0; // Temps écoulé en secondes
+    let timeElapsed = 0;
 
-    // Démarrer un timer pour cet utilisateur
     const interval = setInterval(() => {
         timeElapsed += 1;
         client.send(JSON.stringify({ type: 'queue.timer', time: timeElapsed }));
@@ -60,8 +60,6 @@ export async function handleQueueJoin(client, payload) {
         },
     });
 
-  // TODO: Use real value ranked
-  const ranked = false;
   const mmr = ranked ? user.mmr : user.hide_mmr;
 
   const clientData = {
@@ -72,7 +70,6 @@ export async function handleQueueJoin(client, payload) {
     joinedAt: Date.now(),
   };
 
-  // Ajoute le client à la queue
   addWaitingClient(clientData);
   client.send(JSON.stringify({ type: MessageTypes.QUEUE_ADDED }));
   tryMatchPlayers(getWaitingClients());
