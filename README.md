@@ -19,7 +19,6 @@ git clone https://github.com/Romainub87/yam_master.git
 cd yam_master
 ```
 
-
 ### 1. Installation des dépendances
 
 ```bash
@@ -29,9 +28,14 @@ npm install
 ```
 
 ### 2. Configuration de la base de données
-Assurez-vous que PostgreSQL est installé et configuré. Renseignez les variables d’environnement dans **.env**.
 
-Générez le schéma et appliquez les migrations:
+Lancer le conteneur docker
+
+```bash
+docker compose up -d
+```
+
+Renseignez les variables d’environnement dans **.env**.
 
 ```bash
 cd backend
