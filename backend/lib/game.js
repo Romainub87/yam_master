@@ -298,9 +298,20 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
   // Si un alignement de 5 est détecté, envoie les messages et met à jour le MMR
   if (hasWon) {
     await db.game.update({
-      where: {id: gameId},
-      data: {status: 'FINISHED'},
+      where: { id: gameId },
+      data: { status: 'FINISHED' },
     });
+
+    await db.player_score.update({
+      where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+      data: { winner: true },
+    });
+    if (opponentClient) {
+      await db.player_score.update({
+        where: { game_id_user_id: { game_id: gameId, user_id: opponentClient.userId } },
+        data: { winner: false },
+      });
+    }
 
     client.send(JSON.stringify({
       type: MessageTypes.GAME_WIN,

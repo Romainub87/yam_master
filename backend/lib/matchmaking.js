@@ -1,5 +1,6 @@
 import { createGame } from './game.js';
 import { removeWaitingClient } from '../websocket.js';
+import {timers} from "../handlers/queue.js";
 
 export function tryMatchPlayers(waitingClients) {
   // Trie les joueurs par MMR
@@ -13,7 +14,14 @@ export function tryMatchPlayers(waitingClients) {
 
     if (p1.ranked === p2.ranked && mmrDiff <= tolerance && p1.user.id !== p2.user.id) {
       waitingClients.splice(i, 2);
-      [p1, p2].forEach(removeWaitingClient);
+      [p1, p2].forEach(player => {
+        removeWaitingClient(player);
+        const interval = timers.get(player.user.id);
+        if (interval) {
+          clearInterval(interval);
+          timers.delete(player.user.id);
+        }
+      });
       createGame(p1, p2);
       i--;
     }
