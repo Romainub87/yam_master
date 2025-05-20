@@ -5,6 +5,7 @@ import CustomButton from '@/components/CustomButton';
 import { useRouter } from 'expo-router';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { Colors } from '@/constants/Colors';
+import GameHistory from '@/components/GameHistory';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
@@ -76,11 +77,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require('@/assets/images/background.jpg')}
-      className="flex-1"
-      resizeMode="cover"
-    >
+      <ImageBackground
+          source={require('@/assets/images/background.jpg')}
+          style={{ flex: 1, width: '100%', height: '100%' }}
+          resizeMode="cover"
+      >
       <View className="flex flex-col items-center min-h-screen ml-[158px] p-8 gap-20">
         {user ? (
           <>
@@ -153,28 +154,12 @@ export default function HomeScreen() {
               </View>
             </View>
             <View
-              className="flex flex-col p-10 rounded-xl md:min-w-[500px] lg:min-w-[700px] space-y-7"
+              className="flex flex-col p-5 rounded-xl md:min-w-[500px] lg:min-w-[700px] space-y-7"
               style={{
                 backgroundColor: Colors[colorScheme!]['yam-background'],
               }}
             >
-              <Text
-                className="text-base"
-                style={{
-                  color: Colors[colorScheme!]['yam-default'],
-                  fontSize: 22,
-                  fontWeight: 700,
-                }}
-              >
-                Historique des parties
-              </Text>
-              <View
-                style={{
-                  backgroundColor: Colors[colorScheme!]['yam-default'],
-                  opacity: 0.6,
-                  height: 1,
-                }}
-              ></View>
+                <GameHistory />
             </View>
           </>
         ) : (

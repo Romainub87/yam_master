@@ -43,6 +43,7 @@ model player_score {
   turn       Boolean
   challenge  Boolean  @default(false)
   rolls_left Int
+  winner     Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

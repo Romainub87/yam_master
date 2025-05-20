@@ -199,8 +199,6 @@ export async function handleDefinitiveQuitGame(client, payload) {
         ...getSuspendedClients().filter(c => c.gameId === gameId),
     ];
 
-    await db.player_score.deleteMany({ where: { game_id: gameId } });
-
     allPlayers.forEach(player => {
         removeSuspendedClient(player);
         removeGameClient(player);
@@ -217,28 +215,39 @@ export async function handleDefinitiveQuitGame(client, payload) {
 }
 
 export async function handleForfeit(client, payload) {
-  const gameClient = getGameClients().find(c => c.gameId === payload.gameId && c.userId !== payload.userId);
+    const gameClient = getGameClients().find(c => c.gameId === payload.gameId && c.userId !== payload.userId);
 
-  if (gameClient) {
-      gameClient.client.send(JSON.stringify({
-          type: MessageTypes.OPPONENT_FORFEIT,
-          message: `L'adversaire a abandonné.`,
-      }));
-  }
-
-  client.send(JSON.stringify({
-    type: MessageTypes.PLAYER_FORFEIT,
-    message: 'Vous avez abandonné la partie.',
-  }));
-
-  await db.game.update(
-    {
-      where: { id: payload.gameId },
-      data: { status: 'FINISHED' },
+    if (gameClient) {
+        gameClient.client.send(JSON.stringify({
+            type: MessageTypes.OPPONENT_FORFEIT,
+            message: `L'adversaire a abandonné.`,
+            winner: true,
+        }));
+        await db.player_score.update({
+            where: { game_id_user_id: { game_id: payload.gameId, user_id: gameClient.userId } },
+            data: { winner: true },
+        });
     }
-  )
 
-  removeGameClient(client);
+    await db.player_score.update({
+        where: { game_id_user_id: { game_id: payload.gameId, user_id: payload.userId } },
+        data: { winner: false },
+    });
+
+    client.send(JSON.stringify({
+        type: MessageTypes.PLAYER_FORFEIT,
+        message: 'Vous avez abandonné la partie.',
+        winner: false,
+    }));
+
+    await db.game.update(
+        {
+            where: { id: payload.gameId },
+            data: { status: 'FINISHED' },
+        }
+    )
+
+    removeGameClient(client);
 }
 
 export async function handleTimerUpdate(client, payload) {

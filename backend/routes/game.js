@@ -1,39 +1,72 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
+import db from '../connection.js';
+
 const router = express.Router();
 
-const rollDice = (count) => {
-    return Array.from({ length: count }, () => Math.floor(Math.random() * 6) + 1);
-};
+router.get('/history/:userId', async (req, res) => {
+    const { userId } = req.params;
 
-router.get('/roll-dice', (req, res) => {
-    const { count } = req.query;
-    const authHeader = req.headers.authorization;
+    const player_scores = await db.player_score.findMany({
+        where: {
+            user_id: parseInt(userId),
+        }
+    });
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: "Token d'authentification manquant ou invalide !" });
-    }
+    const opponentScores = await db.player_score.findMany({
+        where: {
+            game_id: {
+                in: player_scores.map((player_score) => player_score.game_id)
+            },
+            user_id: {
+                not: parseInt(userId)
+            }
+        },
+        select: {
+            user_id: true
+        }
+    });
+    console.log(opponentScores);
 
-    const token = authHeader.split(' ')[1];
+    const opponents = opponentScores.length > 0
+        ? await db.users.findMany({
+            where: {
+                id: {
+                    in: opponentScores.map(os => os.user_id)
+                }
+            },
+            select: {
+                id: true,
+                username: true
+            }
+        })
+        : [];
 
-    let decodedToken;
-    try {
-        decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-        return res.status(401).json({ error: "Token invalide ou expiré." });
-    }
-    const user = decodedToken.user;
+    console.log(opponents);
 
-    if (!user) {
-        return res.status(401).json({ error: "Token not found." });
-    }
+    const games = await db.game.findMany({
+        where: {
+            id: {
+                in: player_scores.map((player_score) => player_score.game_id)
+            }
+        },
+        select: {
+            id: true,
+            created_at: true,
+            status: true,
+        }
+    });
 
-    if (!count || isNaN(count)) {
-        return res.status(400).json({ error: 'Le paramètre "count" est requis et doit être un nombre.' });
-    }
+    const gamesWithOpponentName = games.map(game => {
+        const opponentScore = opponentScores.find(os => os.user_id !== parseInt(userId));
+        const opponent = opponents.find(o => o.id === opponentScore?.user_id);
+        return {
+            ...game,
+            isWinner: player_scores.some(ps => ps.game_id === game.id && ps.winner === true),
+            opponentName: opponent ? opponent.username : null,
+        };
+    });
 
-    const diceRolls = rollDice(parseInt(count, 10));
-    res.json({ dice: diceRolls });
+    res.json(gamesWithOpponentName);
 });
 
 export default router;
