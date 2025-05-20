@@ -15,6 +15,7 @@ export default function HomeScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState<number | null>(null);
   const [showBotMode, setShowBotMode] = useState(false);
+  const [mmr, setMmr] = useState(user?.mmr ?? 0);
 
   useEffect(() => {
     if (lastMessage) {
@@ -37,6 +38,30 @@ export default function HomeScreen() {
             params: { id: lastMessage.gameId },
           });
         }
+        if (lastMessage.type === 'player.loseMmr') {
+          if (lastMessage.isRanked) {
+            if (user?.mmr) {
+              user.mmr = user?.mmr - 9;
+              setMmr((prev) => (prev ?? 0) - 9);
+            }
+          } else {
+            if (user?.hide_mmr) {
+              user.hide_mmr = user?.hide_mmr - 9;
+            }
+          }
+        }
+        if (lastMessage.type === 'player.winMmr') {
+          if (lastMessage.isRanked) {
+            if (user?.mmr) {
+              user.mmr = user?.mmr + 9;
+              setMmr((prev) => (prev ?? 0) + 9);
+            }
+          } else {
+            if (user?.hide_mmr) {
+              user.hide_mmr = user?.hide_mmr + 9;
+            }
+          }
+        }
       } catch (error) {
         console.error(
           'Erreur lors du traitement du message WebSocket :',
@@ -56,25 +81,25 @@ export default function HomeScreen() {
     });
   };
 
-    const joinRankedQueue = () => {
-        sendMessage({
-        type: 'queue.join',
-        payload: {
-            userId: user?.id,
-            ranked: true,
-        },
-        });
-    };
+  const joinRankedQueue = () => {
+    sendMessage({
+      type: 'queue.join',
+      payload: {
+        userId: user?.id,
+        ranked: true,
+      },
+    });
+  };
 
-    const joinBotGame = () => {
-        sendMessage({
-        type: 'game.bot',
-        payload: {
-            userId: user?.id,
-            bot: true,
-        },
-        });
-    }
+  const joinBotGame = () => {
+    sendMessage({
+      type: 'game.bot',
+      payload: {
+        userId: user?.id,
+        bot: true,
+      },
+    });
+  };
 
   const leaveQueue = () => {
     sendMessage({
@@ -88,11 +113,11 @@ export default function HomeScreen() {
   };
 
   return (
-      <ImageBackground
-          source={require('@/assets/images/background.jpg')}
-          style={{ flex: 1, width: '100%', height: '100%' }}
-          resizeMode="cover"
-      >
+    <ImageBackground
+      source={require('@/assets/images/background.jpg')}
+      style={{ flex: 1, width: '100%', height: '100%' }}
+      resizeMode="cover"
+    >
       <View className="flex flex-col items-center min-h-screen ml-[158px] p-8 gap-20">
         {user ? (
           <>
@@ -117,7 +142,7 @@ export default function HomeScreen() {
                     fontWeight: 700,
                   }}
                 >
-                  🏆 MMR : {user.mmr !== null ? user.mmr : 'Non classé'}
+                  🏆 MMR : {mmr !== null ? mmr : 'Non classé'}{' '}
                 </Text>
               </View>
 
@@ -150,44 +175,43 @@ export default function HomeScreen() {
                   </>
                 ) : (
                   <View className="w-full flex items-center">
-                      {!showBotMode && (
-                          <>
-                              <CustomButton
-                                  title="Jouer"
-                                  onPress={joinQueue}
-                                  className="w-full max-w-[420px]"
-                              />
-                              <CustomButton
-                                  title={"Jouer en classé"}
-                                  onPress={joinRankedQueue}
-                                  className="w-full max-w-[420px] mt-4"
-                              />
-                              <CustomButton
-                                  title={"Jouer contre l'ordinateur"}
-                                  onPress={() => setShowBotMode(true)}
-                                  className="w-full max-w-[420px] mt-4"
-                              />
-                          </>
-                      )}
-                      {showBotMode && (
-                              <View className="w-full flex flex-col items-start">
-                                  <View className="w-full flex flex-row justify-start">
-                                      <CustomButton
-                                          title="Retour"
-                                          onPress={() => setShowBotMode(false)}
-                                          className="w-1/4 max-w-[420px] mb-2"
-                                      />
-                                  </View>
-                                  <View className="w-full flex flex-col items-center mt-4">
-                                      <CustomButton
-                                          title={"Mode facile"}
-                                          onPress={joinBotGame}
-                                          className="w-full max-w-[420px] mt-2"
-                                      />
-                                  </View>
-                              </View>
-                          )
-                        }
+                    {!showBotMode && (
+                      <>
+                        <CustomButton
+                          title="Jouer"
+                          onPress={joinQueue}
+                          className="w-full max-w-[420px]"
+                        />
+                        <CustomButton
+                          title={'Jouer en classé'}
+                          onPress={joinRankedQueue}
+                          className="w-full max-w-[420px] mt-4"
+                        />
+                        <CustomButton
+                          title={"Jouer contre l'ordinateur"}
+                          onPress={() => setShowBotMode(true)}
+                          className="w-full max-w-[420px] mt-4"
+                        />
+                      </>
+                    )}
+                    {showBotMode && (
+                      <View className="w-full flex flex-col items-start">
+                        <View className="w-full flex flex-row justify-start">
+                          <CustomButton
+                            title="Retour"
+                            onPress={() => setShowBotMode(false)}
+                            className="w-full max-w-[420px] mb-2"
+                          />
+                        </View>
+                        <View className="w-full flex flex-col items-center mt-4">
+                          <CustomButton
+                            title={'Mode facile'}
+                            onPress={joinBotGame}
+                            className="w-full max-w-[420px] mt-2"
+                          />
+                        </View>
+                      </View>
+                    )}
                   </View>
                 )}
               </View>
@@ -198,7 +222,7 @@ export default function HomeScreen() {
                 backgroundColor: Colors[colorScheme!]['yam-background'],
               }}
             >
-                <GameHistory />
+              <GameHistory />
             </View>
           </>
         ) : (
