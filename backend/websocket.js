@@ -18,6 +18,7 @@ import {
 } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 import { timers } from './handlers/queue.js';
+import {handleBotAction, handleCreateBotGame} from "./handlers/bot.js";
 
 let waitingClients = [];
 let gameClients = [];
@@ -38,6 +39,8 @@ const handlers = {
   [MessageTypes.SCORE_COMBINATION]: (ws, payload) => handleScoreCombination(ws, payload),
   [MessageTypes.CHALLENGE]: (ws, payload) => handleChallenge(ws, payload),
   [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
+    [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
+    [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
 };
 
 export function setupWebSocket(server) {
@@ -72,6 +75,9 @@ export function setupWebSocket(server) {
     ws.on('close', () => {
       console.log('Client déconnecté');
       handleClientDisconnection(ws);
+      waitingClients = [];
+      gameClients = [];
+      suspendedClients = [];
       clearInterval(timers.get(ws.userId));
       timers.delete(ws.userId);
     });

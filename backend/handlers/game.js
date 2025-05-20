@@ -7,6 +7,7 @@ import {
 import db from '../connection.js';
 import { MessageTypes } from '../types/message.js';
 import {resetDices, calculateValidCombinations, checkAlignmentsAndUpdateScores} from "../lib/game.js";
+import {handleBotAction} from "./bot.js";
 
 export async function handleGameSubscribe(client, payload) {
   const { userId, gameId } = payload;
@@ -140,6 +141,14 @@ export async function handleLockDice(client, payload) {
 
 export async function handleTurnChange(client, payload) {
   const { gameId, userId } = payload;
+
+    if (gameId) {
+        const game = await db.game.findUnique({ where: { id: gameId } });
+        if (game && game.isBot) {
+            await handleBotAction(client, payload);
+            return;
+        }
+    }
 
   try {
     const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
@@ -308,14 +317,6 @@ export async function handleScoreCombination(client, payload) {
 
     const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
     const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
-
-    const playerScore = await db.player_score.findUnique({
-        where: { game_id_user_id: { game_id: gameId, user_id: userId } },
-    });
-
-    const opponentScore = await db.player_score.findUnique({
-        where: { game_id_user_id: { game_id: gameId, user_id: opponentUserId } },
-    });
 
     const gameClient = getGameClients().find(c => c.gameId === gameId && c.userId === opponentUserId);
     await Promise.all(playerScores.map(player => checkAlignmentsAndUpdateScores(gameId, player.user_id, client, gameClient)));

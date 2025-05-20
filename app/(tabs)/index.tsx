@@ -65,6 +65,16 @@ export default function HomeScreen() {
         });
     };
 
+    const joinBotGame = () => {
+        sendMessage({
+        type: 'game.bot',
+        payload: {
+            userId: user?.id,
+            bot: true,
+        },
+        });
+    }
+
   const leaveQueue = () => {
     sendMessage({
       type: 'queue.leave',
@@ -149,6 +159,11 @@ export default function HomeScreen() {
                         onPress={joinRankedQueue}
                         className="w-full max-w-[420px] mt-4"
                         />
+                    <CustomButton
+                        title={"Jouer contre l'ordinateur"}
+                        onPress={joinBotGame}
+                        className="w-full max-w-[420px] mt-4"
+                    />
                   </View>
                 )}
               </View>

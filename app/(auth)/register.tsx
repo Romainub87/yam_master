@@ -53,9 +53,9 @@ export default function RegisterScreen() {
 
   return (
     <ImageBackground
-      source={require('@/assets/images/background.jpg')}
-      className="flex-1"
-      resizeMode="cover"
+        source={require('@/assets/images/background.jpg')}
+        style={{ flex: 1, width: '100%', height: '100%' }}
+        resizeMode="cover"
     >
       <View className="flex justify-center items-center min-h-screen w-full">
         <View

@@ -323,10 +323,9 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
         type: MessageTypes.GAME_LOSE,
         message: 'Vous avez perdu.',
       }));
+      await updateMMR(userId, gameId, true, isRanked);
+      await updateMMR(opponentClient.userId, gameId, false, isRanked);
     }
-
-    await updateMMR(userId, gameId, true, isRanked);
-    await updateMMR(opponentClient.userId, gameId, false, isRanked);
   }
 
   return alignments;
