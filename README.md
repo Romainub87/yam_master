@@ -19,7 +19,6 @@ git clone https://github.com/Romainub87/yam_master.git
 cd yam_master
 ```
 
-
 ### 1. Installation des dépendances
 
 ```bash
@@ -35,9 +34,8 @@ Lancer le conteneur docker
 ```bash
 docker compose up -d
 ```
-Renseignez les variables d’environnement dans **.env**.
 
-Générez le schéma et appliquez les migrations:
+Renseignez les variables d’environnement dans **.env**.
 
 ```bash
 cd backend
