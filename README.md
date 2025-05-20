@@ -1,68 +1,64 @@
-# Welcome to your Expo app 👋
+# Documentation technique du projet
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Stack technique
 
-## Get started
+Le projet utilise les technologies suivantes:
 
-1. Install dependencies
+- **React Native** & **Expo**: Développement d’applications mobiles multiplateformes (iOS/Android).
+- **Node.js**: Environnement d’exécution pour le backend.
+- **SQL**: Base de données relationnelle (PostgreSQL).
+- **npm**: Gestionnaire de paquets.
+- **Prisma**: ORM pour la gestion de la base de données.
 
-   ```bash
-   npm install
-   ```
+## Lancer le projet
 
-   ```bash
-   cd backend
-   npm install
-   ```
-
-2. Install prisa model
-
-   ```bash
-   cd backend
-   npm run generate:postgres
-   npm run migrate:postgres
-   ```
-
-3. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-   ```bash
-   cd backend
-   npx run dev
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Cloner le dépôt
 
 ```bash
-npm run reset-project
+git clone https://github.com/Romainub87/yam_master.git
+cd yam_master
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+### 1. Installation des dépendances
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+cd backend
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 2. Configuration de la base de données
+Assurez-vous que PostgreSQL est installé et configuré. Renseignez les variables d’environnement dans **.env**.
 
-## Join the community
+Générez le schéma et appliquez les migrations:
 
-Join our community of developers creating universal apps.
+```bash
+cd backend
+npm run generate:postgres
+npm run migrate:postgres
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 3. Démarrage des serveurs
+Lancer le serveuur front:
+
+```bash
+npm run start
+```
+Lancer le serveur backend:
+
+```bash
+cd backend
+npm run dev
+```
+
+## Architecture du projet
+- **app/**: Application mobile avec routage basé sur les fichiers.
+- **assets/**: Ressources statiques (images, polices).
+- **components/**: Composants réutilisables de l’application.
+- **hooks/**: Hooks personnalisés pour la gestion de l’état et des effets.
+- **context/**: Contexte React pour la gestion de l’état global.
+- **backend/**: API REST, logique métier, accès à la base de données via Prisma.
+- **prisma/**: Modèle de données et migrations pour la base de données.
+- **.env**: Variables d’environnement pour la configuration de l’application.
+- **.env.example**: Exemple de fichier d’environnement.
