@@ -18,7 +18,7 @@ model users {
   id           Int            @id @default(autoincrement())
   username     String         @unique
   password     String
-  mmr          Int?
+  mmr          Int            @default(400)
   hide_mmr     Int            @default(400)
   player_score player_score[]
   created_at   DateTime       @default(now())
