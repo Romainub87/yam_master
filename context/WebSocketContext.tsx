@@ -17,65 +17,66 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [lastMessage, setLastMessage] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const [reconnectAttempts, setReconnectAttempts] = useState(0);
-
-    const connectWebSocket = () => {
-        const ws = new WebSocket(url);
-
-        ws.onopen = () => {
-            console.log('WebSocket connecté');
-            setIsConnected(true);
-            setReconnectAttempts(0); // Réinitialiser les tentatives de reconnexion
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                setLastMessage(data);
-            } catch (error) {
-                console.error('Erreur lors du parsing du message WebSocket :', error);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket déconnecté');
-            setIsConnected(false);
-            attemptReconnect(); // Tenter une reconnexion
-        };
-
-        ws.onerror = (error) => {
-            console.error('Erreur WebSocket :', error);
-            setIsConnected(false);
-            attemptReconnect(); // Tenter une reconnexion
-        };
-
-        setSocket(ws);
-    };
-
-    const attemptReconnect = () => {
-        if (reconnectAttempts < 5) { // Limiter les tentatives de reconnexion
-            const delay = Math.min(1000 * 2 ** reconnectAttempts, 30000); // Délai exponentiel (max 30s)
-            setTimeout(() => {
-                console.log(`Tentative de reconnexion... (${reconnectAttempts + 1})`);
-                setReconnectAttempts((prev) => prev + 1);
-                connectWebSocket();
-            }, delay);
-        } else {
-            console.warn('Nombre maximum de tentatives de reconnexion atteint.');
-        }
-    };
 
     useEffect(() => {
+        let ws: WebSocket | null = null;
+
+        const connectWebSocket = () => {
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                console.log('WebSocket déjà connecté ou en cours de connexion');
+                return;
+            }
+
+            ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                console.log('WebSocket connecté');
+                setIsConnected(true);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    setLastMessage(data);
+                } catch (error) {
+                    console.error('Erreur lors du parsing du message WebSocket :', error);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket déconnecté');
+                setIsConnected(false);
+            };
+
+            ws.onerror = (error) => {
+                console.error('Erreur WebSocket :', error);
+                setIsConnected(false);
+            };
+
+            setSocket(ws);
+        };
+
         connectWebSocket();
 
         return () => {
-            socket?.close();
+            if (ws) {
+                ws.close();
+                console.log('WebSocket fermé');
+            }
         };
     }, [url]);
 
+    const lastSentMessageRef = React.useRef<string | null>(null);
+
     const sendMessage = (message: any) => {
+        const messageStr = JSON.stringify(message);
         if (socket && isConnected) {
-            socket.send(JSON.stringify(message));
+            if (lastSentMessageRef.current === messageStr) {
+                console.warn('Message déjà envoyé');
+                return;
+            }
+            socket.send(messageStr);
+            lastSentMessageRef.current = messageStr;
         } else {
             console.warn('WebSocket non connecté');
         }

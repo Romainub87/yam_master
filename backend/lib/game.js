@@ -294,8 +294,15 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
     checkDiagonal(0, j, 1, 1);
     if (hasWon) break;
   }
+  for (let i = 0; i < grid.length; i++) {
+    checkDiagonal(i, grid[0].length - 1, 1, -1);
+    if (hasWon) break;
+  }
+  for (let j = grid[0].length - 2; j >= 0; j--) {
+    checkDiagonal(0, j, 1, -1);
+    if (hasWon) break;
+  }
 
-  // Si un alignement de 5 est détecté, envoie les messages et met à jour le MMR
   if (hasWon) {
     await db.game.update({
       where: { id: gameId },
@@ -323,10 +330,50 @@ async function checkAlignments(grid, userId, gameId, isRanked, client, opponentC
         type: MessageTypes.GAME_LOSE,
         message: 'Vous avez perdu.',
       }));
+      await updateMMR(userId, gameId, true, isRanked);
+      await updateMMR(opponentClient.userId, gameId, false, isRanked);
     }
+  } else {
+    const hasFreeCell = grid.some(row => row.some(cell => cell.user === null));
+    if (!hasFreeCell) {
+      const scores = await db.player_score.findMany({ where: { game_id: gameId } });
+      if (scores.length === 2) {
+        const [p1, p2] = scores;
+        let winnerId = null;
+        if (p1.score > p2.score) winnerId = p1.user_id;
+        else if (p2.score > p1.score) winnerId = p2.user_id;
 
-    await updateMMR(userId, gameId, true, isRanked);
-    await updateMMR(opponentClient.userId, gameId, false, isRanked);
+        await db.game.update({
+          where: { id: gameId },
+          data: { status: 'FINISHED' },
+        });
+
+        if (winnerId) {
+          await db.player_score.updateMany({
+            where: { game_id: gameId },
+            data: { winner: false },
+          });
+          await db.player_score.update({
+            where: { game_id_user_id: { game_id: gameId, user_id: winnerId } },
+            data: { winner: true },
+          });
+        }
+      }
+
+      client.send(JSON.stringify({
+        type: MessageTypes.GAME_WIN,
+        message: 'Vous avez gagné !',
+      }));
+
+      if (opponentClient) {
+        opponentClient.client.send(JSON.stringify({
+          type: MessageTypes.GAME_LOSE,
+          message: 'Vous avez perdu.',
+        }));
+        await updateMMR(userId, gameId, true, isRanked);
+        await updateMMR(opponentClient.userId, gameId, false, isRanked);
+      }
+    }
   }
 
   return alignments;

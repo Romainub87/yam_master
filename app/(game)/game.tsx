@@ -53,7 +53,8 @@ export default function GameScreen() {
       try {
         if (
           lastMessage.type === 'game.update' ||
-          lastMessage.type === 'game.start'
+          lastMessage.type === 'game.start' ||
+            lastMessage.type === 'game.botAction'
         ) {
           setGameData(lastMessage);
         }
@@ -74,16 +75,25 @@ export default function GameScreen() {
           }));
 
           if (
-            lastMessage.playerScore.rolls_left === 0 &&
-            lastMessage.combinations.length === 0
+              lastMessage.playerScore.rolls_left === 0 &&
+              lastMessage.combinations.length === 0
           ) {
-            sendMessage({
-              type: 'game.turnChange',
-              payload: {
-                gameId: lastMessage.game.id,
-                userId: user?.id,
-              },
-            });
+            if (!lastMessage.game.isBot) {
+              sendMessage({
+                type: 'game.turnChange',
+                payload: {
+                  gameId: lastMessage.game.id,
+                  userId: user?.id,
+                },
+              });
+            } else {
+              sendMessage({
+                type: 'game.botAction',
+                payload: {
+                  gameId: lastMessage.game.id,
+                },
+              });
+            }
           }
         }
         if (
@@ -121,9 +131,9 @@ export default function GameScreen() {
 
   return (
     <ImageBackground
-      source={require('@/assets/images/background.jpg')}
-      className="flex-1"
-      resizeMode="cover"
+        source={require('@/assets/images/background.jpg')}
+        style={{ flex: 1, width: '100%', height: '100%' }}
+        resizeMode="cover"
     >
       <ScrollView>
         <View className="flex flex-col items-center min-h-screen p-8 gap-10">

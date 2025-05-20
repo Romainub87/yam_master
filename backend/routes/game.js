@@ -25,7 +25,6 @@ router.get('/history/:userId', async (req, res) => {
             user_id: true
         }
     });
-    console.log(opponentScores);
 
     const opponents = opponentScores.length > 0
         ? await db.users.findMany({
@@ -41,14 +40,16 @@ router.get('/history/:userId', async (req, res) => {
         })
         : [];
 
-    console.log(opponents);
-
     const games = await db.game.findMany({
         where: {
             id: {
                 in: player_scores.map((player_score) => player_score.game_id)
             }
         },
+        orderBy: {
+            created_at: 'desc',
+        },
+        take: 10,
         select: {
             id: true,
             created_at: true,

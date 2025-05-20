@@ -23,4 +23,6 @@ export const MessageTypes = {
   CHALLENGE: 'game.challenge',
   GAME_WIN: 'game.win',
   GAME_LOSE: 'game.lose',
+  BOT_GAME: 'game.bot',
+  BOT_ACTION: 'game.botAction',
 };

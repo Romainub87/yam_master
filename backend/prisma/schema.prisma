@@ -31,6 +31,7 @@ model game {
   status        String
   timer         Int
   isRanked      Boolean        @default(false)
+  isBot         Boolean        @default(false)
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
   player_scores player_score[]

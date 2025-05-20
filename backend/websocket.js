@@ -18,6 +18,7 @@ import {
 } from './handlers/queue.js';
 import { MessageTypes } from './types/message.js';
 import { timers } from './handlers/queue.js';
+import {handleBotAction, handleCreateBotGame} from "./handlers/bot.js";
 
 let waitingClients = [];
 let gameClients = [];
@@ -38,12 +39,19 @@ const handlers = {
   [MessageTypes.SCORE_COMBINATION]: (ws, payload) => handleScoreCombination(ws, payload),
   [MessageTypes.CHALLENGE]: (ws, payload) => handleChallenge(ws, payload),
   [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
+    [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
+    [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
 };
 
 export function setupWebSocket(server) {
   const wss = new WebSocketServer({ server });
 
   wss.on('connection', (ws) => {
+    if (gameClients.some(client => client.userId === ws.userId)) {
+      console.warn('Utilisateur déjà connecté');
+      ws.close();
+      return;
+    }
     console.log('Client connecté');
 
     ws.on('message', (messageBuffer) => {

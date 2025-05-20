@@ -34,22 +34,22 @@ export default function GameHistory() {
     return (
         <View className="p-4 px-2">
             <Text className="text-2xl font-bold mb-4 text-center" style={{ color: Colors[colorScheme!]['yam-default'], fontSize: 28 }}>
-                Historique des parties
+                10 dernières parties
             </Text>
             {history.length > 0 ? (
-                <FlatList
-                    data={history}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ item }) => (
-                        <View
-                            className="p-4 px-2 mb-2 rounded-lg"
-                        >
-                            <Text style={{ color: Colors[colorScheme!]['yam-default'], fontWeight: 'bold', fontSize: 20, elevation: 2 }}>
-                                {item.isWinner ? 'Victoire' : 'Défaite'} contre {item.opponentName} — {new Date(item.created_at).toLocaleDateString()} à {new Date(item.created_at).toLocaleTimeString()}
-                            </Text>
-                        </View>
-                    )}
-                />
+                <View style={{ maxHeight: 500 }}>
+                    <FlatList
+                        data={history}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={({ item }) => (
+                            <View className="p-4 px-2 mb-2 rounded-lg">
+                                <Text style={{ color: Colors[colorScheme!]['yam-default'], fontWeight: 'bold', fontSize: 20, elevation: 2 }}>
+                                    {item.isWinner ? 'Victoire' : 'Défaite'} contre {item.opponentName} — {new Date(item.created_at).toLocaleDateString()} à {new Date(item.created_at).toLocaleTimeString()}
+                                </Text>
+                            </View>
+                        )}
+                    />
+                </View>
             ) : (
                 <Text style={{ color: Colors[colorScheme!]['yam-default'] }}>Aucune partie trouvée.</Text>
             )}

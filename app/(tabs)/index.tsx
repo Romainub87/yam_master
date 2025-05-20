@@ -14,6 +14,7 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const [isSearching, setIsSearching] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState<number | null>(null);
+  const [showBotMode, setShowBotMode] = useState(false);
 
   useEffect(() => {
     if (lastMessage) {
@@ -64,6 +65,16 @@ export default function HomeScreen() {
         },
         });
     };
+
+    const joinBotGame = () => {
+        sendMessage({
+        type: 'game.bot',
+        payload: {
+            userId: user?.id,
+            bot: true,
+        },
+        });
+    }
 
   const leaveQueue = () => {
     sendMessage({
@@ -139,16 +150,44 @@ export default function HomeScreen() {
                   </>
                 ) : (
                   <View className="w-full flex items-center">
-                    <CustomButton
-                      title="Jouer"
-                      onPress={joinQueue}
-                      className="w-full max-w-[420px]"
-                    />
-                    <CustomButton
-                        title={"Jouer en classé"}
-                        onPress={joinRankedQueue}
-                        className="w-full max-w-[420px] mt-4"
-                        />
+                      {!showBotMode && (
+                          <>
+                              <CustomButton
+                                  title="Jouer"
+                                  onPress={joinQueue}
+                                  className="w-full max-w-[420px]"
+                              />
+                              <CustomButton
+                                  title={"Jouer en classé"}
+                                  onPress={joinRankedQueue}
+                                  className="w-full max-w-[420px] mt-4"
+                              />
+                              <CustomButton
+                                  title={"Jouer contre l'ordinateur"}
+                                  onPress={() => setShowBotMode(true)}
+                                  className="w-full max-w-[420px] mt-4"
+                              />
+                          </>
+                      )}
+                      {showBotMode && (
+                              <View className="w-full flex flex-col items-start">
+                                  <View className="w-full flex flex-row justify-start">
+                                      <CustomButton
+                                          title="Retour"
+                                          onPress={() => setShowBotMode(false)}
+                                          className="w-1/4 max-w-[420px] mb-2"
+                                      />
+                                  </View>
+                                  <View className="w-full flex flex-col items-center mt-4">
+                                      <CustomButton
+                                          title={"Mode facile"}
+                                          onPress={joinBotGame}
+                                          className="w-full max-w-[420px] mt-2"
+                                      />
+                                  </View>
+                              </View>
+                          )
+                        }
                   </View>
                 )}
               </View>
