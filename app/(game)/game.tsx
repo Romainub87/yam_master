@@ -54,7 +54,7 @@ export default function GameScreen() {
         if (
           lastMessage.type === 'game.update' ||
           lastMessage.type === 'game.start' ||
-            lastMessage.type === 'game.botAction'
+          lastMessage.type === 'game.botAction'
         ) {
           setGameData(lastMessage);
         }
@@ -75,8 +75,8 @@ export default function GameScreen() {
           }));
 
           if (
-              lastMessage.playerScore.rolls_left === 0 &&
-              lastMessage.combinations.length === 0
+            lastMessage.playerScore.rolls_left === 0 &&
+            lastMessage.combinations.length === 0
           ) {
             if (!lastMessage.game.isBot) {
               sendMessage({
@@ -131,9 +131,9 @@ export default function GameScreen() {
 
   return (
     <ImageBackground
-        source={require('@/assets/images/background.jpg')}
-        style={{ flex: 1, width: '100%', height: '100%' }}
-        resizeMode="cover"
+      source={require('@/assets/images/background.jpg')}
+      style={{ flex: 1, width: '100%', height: '100%' }}
+      resizeMode="cover"
     >
       <ScrollView>
         <View className="flex flex-col items-center min-h-screen p-8 gap-10">

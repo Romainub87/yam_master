@@ -25,4 +25,6 @@ export const MessageTypes = {
   GAME_LOSE: 'game.lose',
   BOT_GAME: 'game.bot',
   BOT_ACTION: 'game.botAction',
+  PLAYER_WIN_MMR: 'player.winMmr',
+  PLAYER_LOSE_MMR: 'player.loseMmr',
 };
