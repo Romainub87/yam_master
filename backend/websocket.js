@@ -47,6 +47,11 @@ export function setupWebSocket(server) {
   const wss = new WebSocketServer({ server });
 
   wss.on('connection', (ws) => {
+    if (gameClients.some(client => client.userId === ws.userId)) {
+      console.warn('Utilisateur déjà connecté');
+      ws.close();
+      return;
+    }
     console.log('Client connecté');
 
     ws.on('message', (messageBuffer) => {
@@ -75,9 +80,6 @@ export function setupWebSocket(server) {
     ws.on('close', () => {
       console.log('Client déconnecté');
       handleClientDisconnection(ws);
-      waitingClients = [];
-      gameClients = [];
-      suspendedClients = [];
       clearInterval(timers.get(ws.userId));
       timers.delete(ws.userId);
     });

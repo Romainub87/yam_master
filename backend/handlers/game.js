@@ -143,9 +143,13 @@ export async function handleTurnChange(client, payload) {
   const { gameId, userId } = payload;
 
     if (gameId) {
-        const game = await db.game.findUnique({ where: { id: gameId } });
+        const game = await db.game.findUnique({ where: { id: gameId, status: 'IN_PROGRESS' } });
         if (game && game.isBot) {
             await handleBotAction(client, payload);
+            return;
+        }
+        if (!game) {
+            client.send(JSON.stringify({ type: MessageTypes.GAME_ERROR, message: 'Partie introuvable' }));
             return;
         }
     }
