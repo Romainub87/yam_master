@@ -23,14 +23,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
 
         const connectWebSocket = () => {
             if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-                console.log('WebSocket déjà connecté ou en cours de connexion');
                 return;
             }
 
             ws = new WebSocket(url);
 
             ws.onopen = () => {
-                console.log('WebSocket connecté');
                 setIsConnected(true);
             };
 
@@ -39,17 +37,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
                     const data = JSON.parse(event.data);
                     setLastMessage(data);
                 } catch (error) {
-                    console.error('Erreur lors du parsing du message WebSocket :', error);
+                    console.error('Erreur lors de la réception du message WebSocket :', error);
                 }
             };
 
             ws.onclose = () => {
-                console.log('WebSocket déconnecté');
                 setIsConnected(false);
             };
 
-            ws.onerror = (error) => {
-                console.error('Erreur WebSocket :', error);
+            ws.onerror = () => {
                 setIsConnected(false);
             };
 
@@ -61,7 +57,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
         return () => {
             if (ws) {
                 ws.close();
-                console.log('WebSocket fermé');
             }
         };
     }, [url]);
@@ -72,13 +67,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
         const messageStr = JSON.stringify(message);
         if (socket && isConnected) {
             if (lastSentMessageRef.current === messageStr) {
-                console.warn('Message déjà envoyé');
                 return;
             }
             socket.send(messageStr);
             lastSentMessageRef.current = messageStr;
-        } else {
-            console.warn('WebSocket non connecté');
         }
     };
 
