@@ -1,7 +1,6 @@
 import http from 'http';
 import app from './app.js';
-import { setupWebSocket, getWaitingClients, getGameClients } from './websocket.js';
-import { tryMatchPlayers } from './lib/matchmaking.js';
+import { setupWebSocket } from './websocket.js';
 
 const server = http.createServer(app);
 

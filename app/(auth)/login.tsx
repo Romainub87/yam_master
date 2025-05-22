@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Link } from 'expo-router';
 import CustomButton from '@/components/CustomButton';
 import { Colors } from '@/constants/Colors';
+import { API_URL } from '@env';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -19,7 +20,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(API_URL+'/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

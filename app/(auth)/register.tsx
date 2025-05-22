@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Link, useRouter } from 'expo-router';
 import CustomButton from '@/components/CustomButton';
 import { Colors } from '@/constants/Colors';
+import { API_URL } from '@env';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');
@@ -23,7 +24,7 @@ export default function RegisterScreen() {
     if (username && password) {
       try {
         const response = await fetch(
-          '/api/auth/register',
+          API_URL+'/auth/register',
           {
             method: 'POST',
             headers: {

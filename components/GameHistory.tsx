@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, FlatList, useColorScheme } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
+import { API_URL } from '@env';
 
 export default function GameHistory() {
     const { user } = useAuth();
@@ -12,7 +13,7 @@ export default function GameHistory() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch(`/api/game/history/${user?.id}`);
+                const response = await fetch(API_URL+`/game/history/${user?.id}`);
                 const data = await response.json();
                 setHistory(data);
             } catch (error) {

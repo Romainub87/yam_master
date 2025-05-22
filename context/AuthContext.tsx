@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@/models/User';
 import {jwtDecode} from "jwt-decode";
+import { API_URL } from '@env';
 
 interface AuthContextType {
     user: User | null;
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         try {
-            const response = await fetch('/api/auth/refresh-token', {
+            const response = await fetch(API_URL+'/auth/refresh-token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refreshToken: storedRefreshToken }),

@@ -9,10 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ces routes ne doivent PAS contenir /api si tu utilises rewrite dans Nginx
-app.use('/queue', queueRoutes);   // accessible via /api/queue
-app.use('/auth', authRoutes);     // accessible via /api/auth
-app.use('/game', gameRoutes);     // accessible via /api/game
+app.use('/queue', queueRoutes);
+app.use('/auth', authRoutes);
+app.use('/game', gameRoutes);
 
 app.get('/', (req, res) => {
   res.send('Serveur WebSocket avec file d’attente');
