@@ -39,13 +39,11 @@ const handlers = {
   [MessageTypes.SCORE_COMBINATION]: (ws, payload) => handleScoreCombination(ws, payload),
   [MessageTypes.CHALLENGE]: (ws, payload) => handleChallenge(ws, payload),
   [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
-    [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
-    [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
+  [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
+  [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
 };
 
-export function setupWebSocket(server) {
-  const wss = new WebSocketServer({ server });
-
+export function setupWebSocket(wss) {
   wss.on('connection', (ws) => {
     if (gameClients.some(client => client.userId === ws.userId)) {
       console.warn('Utilisateur déjà connecté');
@@ -84,6 +82,8 @@ export function setupWebSocket(server) {
       timers.delete(ws.userId);
     });
   });
+
+  // Ne ferme pas le serveur ici. La fermeture du serveur HTTP se gère ailleurs.
 }
 
 export function getWaitingClients() {

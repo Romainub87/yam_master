@@ -30,7 +30,7 @@ export default function RootLayout() {
   }
 
   return (
-      <WebSocketProvider url={"ws://localhost:3000"}>
+      <WebSocketProvider url={"/ws"}>
         <AuthProvider>
           <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
             <Stack>

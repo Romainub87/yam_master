@@ -1,26 +1,26 @@
 import http from 'http';
 import app from './app.js';
-import {setupWebSocket, getWaitingClients, getGameClients} from './websocket.js';
+import { setupWebSocket, getWaitingClients, getGameClients } from './websocket.js';
 import { tryMatchPlayers } from './lib/matchmaking.js';
-import db from "./connection.js";
-
-const PORT = 3000;
 
 const server = http.createServer(app);
-setupWebSocket(server);
 
-let matchingInProgress = false;
+import { WebSocketServer } from 'ws';
+const wss = new WebSocketServer({ noServer: true });
 
-setInterval(async () => {
-  // Gestion du matchmaking
-  if (!matchingInProgress) {
-    matchingInProgress = true;
-    const waiting = getWaitingClients();
-    tryMatchPlayers(waiting);
-    matchingInProgress = false;
+setupWebSocket(wss);
+
+server.on('upgrade', (request, socket, head) => {
+  if (request.url === '/ws') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
   }
 });
 
+const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Serveur en ligne sur http://localhost:${PORT}`);
 });

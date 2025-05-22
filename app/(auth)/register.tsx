@@ -23,7 +23,7 @@ export default function RegisterScreen() {
     if (username && password) {
       try {
         const response = await fetch(
-          'http://localhost:3000/api/auth/register',
+          '/api/auth/register',
           {
             method: 'POST',
             headers: {
