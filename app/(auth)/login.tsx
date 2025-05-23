@@ -54,34 +54,29 @@ export default function LoginScreen() {
           }}
         >
           <Text
-            className="text-center text-4xl font-bold mb-16"
-            style={{
-              color: Colors[colorScheme!]['yam-default'],
-            }}
+            className="text-center text-4xl font-bold mb-16 text-white"
           >
             Connexion
           </Text>
           <TextInput
-            className="w-full p-3 mb-4 rounded focus:outline-none"
+            className="w-full p-3 mb-4 rounded focus:outline-none text-white"
             placeholder="Nom d'utilisateur"
             placeholderTextColor="#A0AEC0"
             value={username}
             onChangeText={setUsername}
             style={{
-              backgroundColor: Colors[colorScheme!]['yam-background-2'],
-              color: Colors[colorScheme!]['yam-default'],
+              backgroundColor: Colors[colorScheme!]['yam-background-2']
             }}
           />
           <TextInput
-            className="w-full p-3 mb-4 rounded focus:outline-none"
+            className="w-full p-3 mb-4 rounded focus:outline-none text-white"
             placeholder="Mot de passe"
             placeholderTextColor="#A0AEC0"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             style={{
-              backgroundColor: Colors[colorScheme!]['yam-background-2'],
-              color: Colors[colorScheme!]['yam-default'],
+              backgroundColor: Colors[colorScheme!]['yam-background-2']
             }}
           />
           <CustomButton title="Se connecter" onPress={handleLogin} />

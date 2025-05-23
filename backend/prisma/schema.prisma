@@ -12,7 +12,7 @@ model users {
   id           Int            @id @default(autoincrement())
   username     String         @unique
   password     String
-  mmr          Int            @default(400)
+  mmr          Int            @default(250)
   hide_mmr     Int            @default(400)
   created_at   DateTime       @default(now())
   player_score player_score[]

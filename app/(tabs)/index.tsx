@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { Colors } from '@/constants/Colors';
 import GameHistory from '@/components/GameHistory';
+import RankImage from "@/components/user/RankImage";
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
@@ -118,48 +119,27 @@ export default function HomeScreen() {
       style={{ flex: 1, width: '100%', height: '100%' }}
       resizeMode="cover"
     >
-      <View className="flex flex-col items-center min-h-screen ml-[158px] p-8 gap-20">
+      <View className="flex flex-col justify-center xl:flex-row xl:justify-center items-center min-h-screen md:ml-[20vw] xl:ml-[12vw] p-8 gap-20">
         {user ? (
           <>
-            <Text
-              className="text-4xl font-bold text-start w-full"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
-            >
-              Bienvenue, {user.username} 👋
-            </Text>
             <View
               className="flex flex-col px-10 py-8 rounded-xl md:min-w-[400px] lg:min-w-[600px] space-y-4"
               style={{
                 backgroundColor: Colors[colorScheme!]['yam-background'],
               }}
             >
-              <View className="space-y-6">
-                <Text
-                  className="text-base"
-                  style={{
-                    color: Colors[colorScheme!]['yam-default'],
-                    fontSize: 22,
-                    fontWeight: 700,
-                  }}
-                >
-                  🏆 MMR : {mmr !== null ? mmr : 'Non classé'}{' '}
-                </Text>
-              </View>
-
               <View className="my-6">
                 {isSearching ? (
                   <>
                     <View className="items-center space-y-2 mt-4">
                       <Text
-                        className="text-lg"
-                        style={{ color: Colors[colorScheme!]['yam-default'] }}
+                        className="text-lg text-white"
                       >
                         🔍 Recherche de parties en cours...
                       </Text>
                       {timeElapsed !== null && (
                         <Text
-                          className="text-sm"
-                          style={{ color: Colors[colorScheme!]['yam-default'] }}
+                          className="text-sm text-white"
                         >
                           Temps écoulé : {timeElapsed} secondes
                         </Text>
@@ -178,14 +158,23 @@ export default function HomeScreen() {
                     {!showBotMode && (
                       <>
                         <CustomButton
-                          title="Jouer"
+                          title="Partie rapide"
                           onPress={joinQueue}
                           className="w-full max-w-[420px]"
                         />
                         <CustomButton
-                          title={'Jouer en classé'}
-                          onPress={joinRankedQueue}
-                          className="w-full max-w-[420px] mt-4"
+                            title={
+                              <Text
+                                  className="flex flex-row items-center justify-center space-x-2"
+                              >
+                                <Text className="text-white text-center font-bold text-lg">
+                                  Partie classée
+                                </Text>
+                                  {mmr !== null ? <RankImage mmr={user?.mmr ?? 0} /> : 'Non classé'}{' '}
+                              </Text>
+                            }
+                            onPress={joinRankedQueue}
+                            className="w-full max-w-[420px] mt-4"
                         />
                         <CustomButton
                           title={"Jouer contre l'ordinateur"}
@@ -198,9 +187,18 @@ export default function HomeScreen() {
                       <View className="w-full flex flex-col items-start">
                         <View className="w-full flex flex-row justify-start">
                           <CustomButton
-                            title="Retour"
-                            onPress={() => setShowBotMode(false)}
-                            className="w-full max-w-[420px] mb-2"
+                              title={
+                                <Text className="flex flex-row items-center">
+                                  <ImageBackground
+                                      source={require('@/assets/ui/return.png')}
+                                      style={{ width: 20, height: 20, marginRight: 8 }}
+                                      imageStyle={{ resizeMode: 'contain' }}
+                                  />
+                                  Retour
+                                </Text>
+                              }
+                              onPress={() => setShowBotMode(false)}
+                              className="w-fit max-w-[420px] mb-2"
                           />
                         </View>
                         <View className="w-full flex flex-col items-center mt-4">
@@ -227,8 +225,7 @@ export default function HomeScreen() {
           </>
         ) : (
           <Text
-            className="text-lg"
-            style={{ color: Colors[colorScheme!]['yam-default'] }}
+            className="text-lg text-white"
           >
             Veuillez vous connecter pour continuer
           </Text>

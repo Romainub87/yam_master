@@ -17,11 +17,10 @@ export default function RulesScreen() {
         style={{ flex: 1, width: '100%', height: '100%' }}
         resizeMode="cover"
     >
-      <ScrollView className="items-center min-h-screen ml-[158px] p-8">
+      <ScrollView className="items-center min-h-screen overflow p-8">
         <View className="flex flex-col gap-5">
           <Text
-            className="text-4xl font-bold text-center w-full mb-6"
-            style={{ color: Colors[colorScheme!]['yam-default'] }}
+            className="text-4xl font-bold text-center w-full mb-6 text-white"
           >
             Règles du jeu Yam Master
           </Text>
@@ -32,22 +31,19 @@ export default function RulesScreen() {
             }}
           >
             <Text
-              className="text-base mb-3 leading-8"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-8 text-white"
             >
               Le Yam Master est un jeu pour deux joueurs avec 5 dés au tour par
               tour.
             </Text>
             <Text
-              className="text-base mb-3 leading-6"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-6 text-white"
             >
               À son tour, un joueur peut lancer les dés à trois reprises, afin
               de réaliser une des combinaisons présentes sur le plateau.
             </Text>
             <Text
-              className="text-base mb-3 leading-6"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-6 text-white"
             >
               Après chaque lancer, il peut écarter autant de dés qu’il le
               souhaite et relancer les autres. Tout dé écarté peut être relancé
@@ -61,8 +57,7 @@ export default function RulesScreen() {
             }}
           >
             <Text
-              className="text-xl font-boldmb-2"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-xl font-boldmb-2 text-white"
             >
               Les combinaisons réalisables sont les suivantes :
             </Text>
@@ -79,8 +74,7 @@ export default function RulesScreen() {
             ].map((rule, index) => (
               <Text
                 key={index}
-                className="text-base mb-2 pl-4"
-                style={{ color: Colors[colorScheme!]['yam-default'] }}
+                className="text-base mb-2 pl-4 text-white"
               >
                 - {rule}
               </Text>
@@ -93,24 +87,21 @@ export default function RulesScreen() {
             }}
           >
             <Text
-              className="text-base mb-3 leading-6"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-6 text-white"
             >
               À noter que les dés peuvent former plusieurs combinaisons
               simultanément (ex : un Yam est aussi un brelan, un carré, un full)
               parmi lesquelles le joueur choisit une combinaison.
             </Text>
             <Text
-              className="text-base mb-3 leading-6"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-6 text-white"
             >
               Dès qu’un joueur réussit une combinaison, il peut (s’il le
               souhaite) poser un pion sur une des cases libres du plateau
               correspondant à sa combinaison.
             </Text>
             <Text
-              className="text-base mb-3 leading-6"
-              style={{ color: Colors[colorScheme!]['yam-default'] }}
+              className="text-base mb-3 leading-6 text-white"
             >
               À tout moment, il est possible d’utiliser le Yam Predator : faire
               un Yam pour retirer n’importe quel pion adverse au lieu d’en poser

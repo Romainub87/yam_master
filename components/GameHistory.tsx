@@ -29,12 +29,12 @@ export default function GameHistory() {
     }, [user]);
 
     if (loading) {
-        return <ActivityIndicator size="large" color={Colors[colorScheme!]['yam-default']} />;
+        return <ActivityIndicator size="large" />;
     }
 
     return (
         <View className="p-4 px-2">
-            <Text className="text-2xl font-bold mb-4 text-center" style={{ color: Colors[colorScheme!]['yam-default'], fontSize: 28 }}>
+            <Text className="text-2xl font-bold mb-4 text-center text-white" style={{ fontSize: 28 }}>
                 10 dernières parties
             </Text>
             {history.length > 0 ? (
@@ -44,7 +44,7 @@ export default function GameHistory() {
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <View className="p-4 px-2 mb-2 rounded-lg">
-                                <Text style={{ color: Colors[colorScheme!]['yam-default'], fontWeight: 'bold', fontSize: 20, elevation: 2 }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, elevation: 2 }} className="text-white">
                                     {item.isWinner ? 'Victoire' : 'Défaite'} contre {item.opponentName} — {new Date(item.created_at).toLocaleDateString()} à {new Date(item.created_at).toLocaleTimeString()}
                                 </Text>
                             </View>

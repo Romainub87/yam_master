@@ -14,7 +14,7 @@ router.post('/register', async (req, res) => {
       where: { username },
     });
     if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
+      return res.status(400).json({ error: 'Le pseudo existe déjà' });
     }
 
     const newUser = await db.users.create({
@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Le pseudo ou le mot de passe sont incorrects' });
     }
 
     const token = jwt.sign({ user }, process.env.JWT_SECRET, {

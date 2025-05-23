@@ -14,16 +14,12 @@ export default function CustomSideTabBar({
 
   return (
     <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        backgroundColor: Colors[colorScheme!]['yam-background'],
-        paddingVertical: 20,
-        paddingHorizontal: 15,
-        justifyContent: 'space-between',
-      }}
+        className={`absolute bottom-0 left-0 flex flex-row w-full justify-between py-5 px-4 
+        md:top-0 md:flex-col md:w-min md:h-full md:rounded-r-2xl
+  md:py-8 md:px-6`}
+        style={{
+            backgroundColor: Colors[colorScheme!]['yam-background'],
+        }}
     >
       {/* Onglets de navigation */}
       <View>
