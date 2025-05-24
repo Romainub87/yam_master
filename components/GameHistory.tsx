@@ -13,7 +13,7 @@ export default function GameHistory() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch(API_URL+`/game/history/${user?.id}`);
+                const response = await fetch(API_URL+`game/history/${user?.id}`);
                 const data = await response.json();
                 setHistory(data);
             } catch (error) {
