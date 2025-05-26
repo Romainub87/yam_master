@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, ImageBackground } from 'react-native';
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import RankImage from '@/components/user/RankImage';
+import { API_URL } from '@env';
 
 type User = {
     id: number;
@@ -16,7 +17,7 @@ export default function Leaderboard() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch('http://localhost:3000/player/leaderboard');
+                const response = await fetch(API_URL+'/player/leaderboard');
                 const data: User[] = await response.json();
                 setUsers(data.sort((a, b) => b.mmr - a.mmr));
             } catch (error) {
