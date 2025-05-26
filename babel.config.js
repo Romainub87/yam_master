@@ -8,7 +8,7 @@ module.exports = function (api) {
         plugins: [
             ["dotenv-import", {
                 "moduleName": "@env",
-                "path": `.env.${process.env.NODE_ENV || "dev"}`,
+                "path": `.env`,
                 "safe": false,
                 "allowUndefined": true
             }]

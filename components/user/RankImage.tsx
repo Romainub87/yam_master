@@ -1,26 +1,34 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Image, Text } from 'react-native';
+import { Asset } from 'expo-asset';
 
 type RankImageProps = {
     mmr: number;
 };
 
-const getRankImage = (mmr: number): string => {
-    if (mmr > 1800) {
-        return require('@/assets/ranks/grandmaster.png');
-    } else if (mmr >= 1500) {
-        return require('@/assets/ranks/master.png');
-    } else if (mmr >= 1000) {
-        return require('@/assets/ranks/diamond.png');
-    } else if (mmr >= 750) {
-        return require('@/assets/ranks/platinium.png');
-    } else if (mmr >= 500) {
-        return require('@/assets/ranks/gold.png');
-    } else if (mmr >= 250) {
-        return require('@/assets/ranks/silver.png');
-    } else {
-        return require('@/assets/ranks/iron.png');
-    }
+const rankImages = {
+    grandmaster: require('@/assets/ranks/grandmaster.png'),
+    master: require('@/assets/ranks/master.png'),
+    diamond: require('@/assets/ranks/diamond.png'),
+    platinium: require('@/assets/ranks/platinium.png'),
+    gold: require('@/assets/ranks/gold.png'),
+    silver: require('@/assets/ranks/silver.png'),
+    iron: require('@/assets/ranks/iron.png'),
+};
+
+// Préchargement des images
+const preloadImages = () => {
+    Object.values(rankImages).forEach((image) => Asset.fromModule(image).downloadAsync());
+};
+
+const getRankImage = (mmr: number): any => {
+    if (mmr > 1800) return rankImages.grandmaster;
+    if (mmr >= 1500) return rankImages.master;
+    if (mmr >= 1000) return rankImages.diamond;
+    if (mmr >= 750) return rankImages.platinium;
+    if (mmr >= 500) return rankImages.gold;
+    if (mmr >= 250) return rankImages.silver;
+    return rankImages.iron;
 };
 
 const getRankLabel = (mmr: number): string => {
@@ -55,10 +63,14 @@ const getRankLabel = (mmr: number): string => {
 };
 
 export default function RankImage({ mmr }: RankImageProps) {
+    useEffect(() => {
+        preloadImages();
+    }, []);
+
     const rankImage = getRankImage(mmr);
 
     return (
-        <View className="items-center flex-row">
+        <View className="items-center justify-between w-fit flex-row">
             <Image
                 source={rankImage}
                 style={{ width: 50, height: 50 }}

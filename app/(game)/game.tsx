@@ -138,8 +138,7 @@ export default function GameScreen() {
       <ScrollView>
         <View className="flex flex-col items-center min-h-screen p-8 gap-10">
           <Text
-            className="text-4xl font-bold text-center w-full"
-            style={{ color: Colors[colorScheme!]['yam-default'] }}
+            className="text-4xl font-bold text-center w-full text-white"
           >
             Partie en cours 🎲
           </Text>

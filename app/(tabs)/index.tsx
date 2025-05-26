@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ImageBackground, useColorScheme } from 'react-native';
+import { View , Text , ImageBackground , useColorScheme , ScrollView } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import CustomButton from '@/components/CustomButton';
 import { useRouter } from 'expo-router';
@@ -119,11 +119,11 @@ export default function HomeScreen() {
       style={{ flex: 1, width: '100%', height: '100%' }}
       resizeMode="cover"
     >
-      <View className="flex flex-col justify-center xl:flex-row xl:justify-center items-center min-h-screen md:ml-[20vw] xl:ml-[12vw] p-8 gap-20">
+      <ScrollView className="items-center min-h-screen overflow md:overflow-hidden p-8 pb-[20vh] md:pb-0">
         {user ? (
-          <>
+          <View className="flex flex-col justify-start xl:flex-row xl:justify-center items-center min-h-screen md:ml-[20vw] xl:ml-[12vw] p-0 gap-10">
             <View
-              className="flex flex-col px-10 py-8 rounded-xl md:min-w-[400px] lg:min-w-[600px] space-y-4"
+              className="flex flex-col px-10 py-3 rounded-xl md:min-w-[400px] lg:min-w-[600px] space-y-4"
               style={{
                 backgroundColor: Colors[colorScheme!]['yam-background'],
               }}
@@ -222,7 +222,7 @@ export default function HomeScreen() {
             >
               <GameHistory />
             </View>
-          </>
+          </View>
         ) : (
           <Text
             className="text-lg text-white"
@@ -230,7 +230,7 @@ export default function HomeScreen() {
             Veuillez vous connecter pour continuer
           </Text>
         )}
-      </View>
+      </ScrollView>
     </ImageBackground>
   );
 }

@@ -149,7 +149,7 @@ export async function handleGameReconnect(client, payload) {
   );
 
   db.game.findUnique({ where: { id: gameId } }).then(async (game) => {
-    if (game.status === 'PAUSED') {
+    if (game.status === 'PAUSED' && game.isBot) {
       await db.game.update({
         where: {id: gameId},
         data: {status: 'IN_PROGRESS'},

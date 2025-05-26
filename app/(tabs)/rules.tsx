@@ -17,8 +17,8 @@ export default function RulesScreen() {
         style={{ flex: 1, width: '100%', height: '100%' }}
         resizeMode="cover"
     >
-      <ScrollView className="items-center min-h-screen overflow p-8">
-        <View className="flex flex-col gap-5">
+      <ScrollView className="items-center min-h-screen overflow p-8 pb-[20vh]">
+        <View className="flex flex-col gap-5 md:ml-[20vw] xl:ml-[12vw]">
           <Text
             className="text-4xl font-bold text-center w-full mb-6 text-white"
           >

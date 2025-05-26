@@ -32,7 +32,7 @@ export default function RootLayout() {
   return (
       <WebSocketProvider url={WS_URL+"/ws"}>
         <AuthProvider>
-          <View className={`flex h-full w-screen ${colorScheme === 'dark' ? 'dark' : ''}`}>
+          <View className={`flex h-full w-screen overflow lg:overflow-hidden ${colorScheme === 'dark' ? 'dark' : ''}`}>
             <Stack>
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(game)" options={{ headerShown: false }} />

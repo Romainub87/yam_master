@@ -14,15 +14,11 @@ export default function CustomSideTabBar({
 
   return (
     <View
-        className={`absolute bottom-0 left-0 flex flex-row w-full justify-between py-5 px-4 
+        className={`absolute bg-black md:opacity-30 bottom-0 left-0 flex flex-row w-full justify-between py-5 px-4 
         md:top-0 md:flex-col md:w-min md:h-full md:rounded-r-2xl
   md:py-8 md:px-6`}
-        style={{
-            backgroundColor: Colors[colorScheme!]['yam-background'],
-        }}
     >
-      {/* Onglets de navigation */}
-      <View>
+      <View className="flex-row md:flex-col space-x-3 md:space-x-0">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -88,7 +84,7 @@ export default function CustomSideTabBar({
             color: 'white',
             marginLeft: 12,
             fontSize: 16,
-            marginRight: 2,
+            marginRight: 2
           }}
         >
           Déconnexion

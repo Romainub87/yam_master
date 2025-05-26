@@ -34,7 +34,7 @@ export default function GameHistory() {
 
     return (
         <View className="p-4 px-2">
-            <Text className="text-2xl font-bold mb-4 text-center text-white" style={{ fontSize: 28 }}>
+            <Text className=" text-base lg:text-2xl font-bold mb-4 text-center text-white" style={{ fontSize: 28 }}>
                 10 dernières parties
             </Text>
             {history.length > 0 ? (
@@ -44,7 +44,7 @@ export default function GameHistory() {
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <View className="p-4 px-2 mb-2 rounded-lg">
-                                <Text style={{ fontWeight: 'bold', fontSize: 20, elevation: 2 }} className="text-white">
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, elevation: 2 }} className="text-white text-sm">
                                     {item.isWinner ? 'Victoire' : 'Défaite'} contre {item.opponentName} — {new Date(item.created_at).toLocaleDateString()} à {new Date(item.created_at).toLocaleTimeString()}
                                 </Text>
                             </View>
@@ -52,7 +52,7 @@ export default function GameHistory() {
                     />
                 </View>
             ) : (
-                <Text style={{ color: Colors[colorScheme!]['yam-default'] }}>Aucune partie trouvée.</Text>
+                <Text className="text-white">Aucune partie trouvée.</Text>
             )}
         </View>
     );
