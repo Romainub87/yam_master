@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Link, useRouter } from 'expo-router';
 import CustomButton from '@/components/CustomButton';
 import { Colors } from '@/constants/Colors';
+import { API_URL } from '@env';
 
 export default function RegisterScreen() {
   const [username, setUsername] = useState('');
@@ -23,7 +24,7 @@ export default function RegisterScreen() {
     if (username && password) {
       try {
         const response = await fetch(
-          'http://localhost:3000/api/auth/register',
+          API_URL+'auth/register',
           {
             method: 'POST',
             headers: {
@@ -59,16 +60,13 @@ export default function RegisterScreen() {
     >
       <View className="flex justify-center items-center min-h-screen w-full">
         <View
-          className="flex flex-col p-10 rounded-xl lg:w-1/3"
+          className="flex flex-col p-10 rounded-xl lg:w-1/3 text-white"
           style={{
             backgroundColor: Colors[colorScheme!]['yam-background'],
           }}
         >
           <Text
-            className="text-center text-4xl font-bold mb-8"
-            style={{
-              color: Colors[colorScheme!]['yam-default'],
-            }}
+            className="text-center text-4xl font-bold mb-8 text-white"
           >
             Inscription
           </Text>
@@ -76,18 +74,17 @@ export default function RegisterScreen() {
             <Text className="text-red-500 text-center mb-4">{error}</Text>
           ) : null}
           <TextInput
-            className="w-full p-3 mb-4 rounded focus:outline-none"
+            className="w-full p-3 mb-4 rounded focus:outline-none text-white"
             placeholder="Nom d'utilisateur"
             placeholderTextColor="#A0AEC0"
             value={username}
             onChangeText={setUsername}
             style={{
               backgroundColor: Colors[colorScheme!]['yam-background-2'],
-              color: Colors[colorScheme!]['yam-default'],
             }}
           />
           <TextInput
-            className="w-full p-3 mb-4 rounded focus:outline-none"
+            className="w-full p-3 mb-4 rounded focus:outline-none text-white"
             placeholder="Mot de passe"
             placeholderTextColor="#A0AEC0"
             value={password}
@@ -95,7 +92,6 @@ export default function RegisterScreen() {
             secureTextEntry
             style={{
               backgroundColor: Colors[colorScheme!]['yam-background-2'],
-              color: Colors[colorScheme!]['yam-default'],
             }}
           />
           <CustomButton title="S'inscrire" onPress={handleRegister} />

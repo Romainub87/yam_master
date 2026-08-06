@@ -1,4 +1,3 @@
-import { WebSocketServer } from 'ws';
 import {
   handleDefinitiveQuitGame,
   handleForfeit,
@@ -28,8 +27,7 @@ let suspendedClients = [];
 const handlers = {
   [MessageTypes.QUEUE_JOIN]: (ws, payload) => handleQueueJoin(ws, payload),
   [MessageTypes.QUEUE_LEAVE]: (ws, payload) => handleQueueLeave(ws, payload),
-  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) =>
-    handleGameSubscribe(ws, payload),
+  [MessageTypes.GAME_SUBSCRIBE]: (ws, payload) => handleGameSubscribe(ws, payload),
   [MessageTypes.LOCK_DICE]: (ws, payload) => handleLockDice(ws, payload),
   [MessageTypes.DICE_ROLL]: (ws, payload) => handleRollDices(ws, payload),
   [MessageTypes.TURN_CHANGE]: (ws, payload) => handleTurnChange(ws, payload),
@@ -39,20 +37,16 @@ const handlers = {
   [MessageTypes.SCORE_COMBINATION]: (ws, payload) => handleScoreCombination(ws, payload),
   [MessageTypes.CHALLENGE]: (ws, payload) => handleChallenge(ws, payload),
   [MessageTypes.GAME_RECONNECT]: (ws, payload) => handleGameReconnect(ws, payload),
-    [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
-    [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
+  [MessageTypes.BOT_GAME]: (ws, payload) => handleCreateBotGame(ws, payload),
+  [MessageTypes.BOT_ACTION]: (ws, payload) => handleBotAction(ws, payload),
 };
 
-export function setupWebSocket(server) {
-  const wss = new WebSocketServer({ server });
-
+export function setupWebSocket(wss) {
   wss.on('connection', (ws) => {
     if (gameClients.some(client => client.userId === ws.userId)) {
-      console.warn('Utilisateur déjà connecté');
       ws.close();
       return;
     }
-    console.log('Client connecté');
 
     ws.on('message', (messageBuffer) => {
       try {
@@ -62,12 +56,9 @@ export function setupWebSocket(server) {
         const handler = handlers[type];
 
         if (handler) {
-          handler(ws, payload);
-        } else {
-          console.warn(`Aucun handler pour le type : ${type}`);
+          handler(ws, { ...payload, userId: ws.userId });
         }
       } catch (err) {
-        console.error('Erreur de parsing ou traitement :', err.message);
         ws.send(
           JSON.stringify({
             type: 'error',
@@ -78,7 +69,6 @@ export function setupWebSocket(server) {
     });
 
     ws.on('close', () => {
-      console.log('Client déconnecté');
       handleClientDisconnection(ws);
       clearInterval(timers.get(ws.userId));
       timers.delete(ws.userId);

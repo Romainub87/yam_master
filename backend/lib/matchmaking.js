@@ -3,7 +3,6 @@ import { removeWaitingClient } from '../websocket.js';
 import {timers} from "../handlers/queue.js";
 
 export function tryMatchPlayers(waitingClients) {
-  // Trie les joueurs par MMR
   waitingClients.sort((a, b) => a.mmr - b.mmr);
 
   for (let i = 0; i < waitingClients.length - 1; i++) {
