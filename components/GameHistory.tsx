@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, FlatList, useColorScheme } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
+import { API_URL } from '@env';
 
 export default function GameHistory() {
-    const { user } = useAuth();
+    const { user, userToken } = useAuth();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const colorScheme = useColorScheme();
@@ -12,7 +13,9 @@ export default function GameHistory() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/game/history/${user?.id}`);
+                const response = await fetch(API_URL+`game/history/${user?.id}`, {
+                    headers: { Authorization: `Bearer ${userToken}` },
+                });
                 const data = await response.json();
                 setHistory(data);
             } catch (error) {
@@ -22,18 +25,18 @@ export default function GameHistory() {
             }
         };
 
-        if (user) {
+        if (user && userToken) {
             fetchHistory();
         }
-    }, [user]);
+    }, [user, userToken]);
 
     if (loading) {
-        return <ActivityIndicator size="large" color={Colors[colorScheme!]['yam-default']} />;
+        return <ActivityIndicator size="large" />;
     }
 
     return (
         <View className="p-4 px-2">
-            <Text className="text-2xl font-bold mb-4 text-center" style={{ color: Colors[colorScheme!]['yam-default'], fontSize: 28 }}>
+            <Text className=" text-base lg:text-2xl font-bold mb-4 text-center text-white" style={{ fontSize: 28 }}>
                 10 dernières parties
             </Text>
             {history.length > 0 ? (
@@ -43,7 +46,7 @@ export default function GameHistory() {
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={({ item }) => (
                             <View className="p-4 px-2 mb-2 rounded-lg">
-                                <Text style={{ color: Colors[colorScheme!]['yam-default'], fontWeight: 'bold', fontSize: 20, elevation: 2 }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, elevation: 2 }} className="text-white text-sm">
                                     {item.isWinner ? 'Victoire' : 'Défaite'} contre {item.opponentName} — {new Date(item.created_at).toLocaleDateString()} à {new Date(item.created_at).toLocaleTimeString()}
                                 </Text>
                             </View>
@@ -51,7 +54,7 @@ export default function GameHistory() {
                     />
                 </View>
             ) : (
-                <Text style={{ color: Colors[colorScheme!]['yam-default'] }}>Aucune partie trouvée.</Text>
+                <Text className="text-white">Aucune partie trouvée.</Text>
             )}
         </View>
     );

@@ -5,7 +5,6 @@ import db from '../connection.js';
 
 const router = express.Router();
 
-// Inscription
 router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -15,7 +14,7 @@ router.post('/register', async (req, res) => {
       where: { username },
     });
     if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
+      return res.status(400).json({ error: 'Le pseudo existe déjà' });
     }
 
     const newUser = await db.users.create({
@@ -42,7 +41,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Connexion
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -51,7 +49,7 @@ router.post('/login', async (req, res) => {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Le pseudo ou le mot de passe sont incorrects' });
     }
 
     const token = jwt.sign({ user }, process.env.JWT_SECRET, {
@@ -69,7 +67,6 @@ router.post('/login', async (req, res) => {
 router.post('/refresh-token', (req, res) => {
   const { refreshToken } = req.body;
 
-  // Vérifiez la validité du refresh token
   jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
     if (err) {
       return res
@@ -77,7 +74,6 @@ router.post('/refresh-token', (req, res) => {
         .json({ message: 'Refresh token invalide ou expiré' });
     }
 
-    // Générez un nouveau JWT
     const newToken = jwt.sign({ user: decoded.user }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });

@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 
 import { PrismaClient } from '@prisma/client';
 
-dotenv.config({path: '../.env'});
+dotenv.config({path: '.env'});
 
 const db = new PrismaClient();
 

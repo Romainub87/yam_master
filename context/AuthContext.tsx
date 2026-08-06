@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@/models/User';
 import {jwtDecode} from "jwt-decode";
+import { API_URL } from '@env';
 
 interface AuthContextType {
     user: User | null;
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/refresh-token', {
+            const response = await fetch(API_URL+'auth/refresh-token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refreshToken: storedRefreshToken }),
@@ -80,6 +81,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await logout();
         }
     };
+
+    useEffect(() => {
+        if (!userToken) {
+            return;
+        }
+
+        let decoded: { exp: number };
+        try {
+            decoded = jwtDecode(userToken);
+        } catch (error) {
+            return;
+        }
+
+        const msUntilExpiry = decoded.exp * 1000 - Date.now();
+        const refreshDelay = Math.max(msUntilExpiry - 60_000, 5_000);
+
+        const timeout = setTimeout(() => {
+            refreshToken();
+        }, refreshDelay);
+
+        return () => clearTimeout(timeout);
+    }, [userToken]);
 
     return (
         <AuthContext.Provider value={{ user, userToken, isLoading, login, logout, refreshToken }}>

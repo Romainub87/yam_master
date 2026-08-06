@@ -37,6 +37,15 @@ export default function TabLayout() {
           ),
         }}
       />
+        <Tabs.Screen
+            name="leaderboard"
+            options={{
+            title: 'Classement',
+            tabBarIcon: ({ color, size }) => (
+                <FontAwesome name="trophy" size={size} color={color} />
+            ),
+            }}
+        />
     </Tabs>
   );
 }

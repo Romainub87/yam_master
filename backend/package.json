@@ -21,9 +21,11 @@
     "dotenv": "^16.5.0",
     "dotenv-cli": "^8.0.0",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
-    "ws": "^8.18.1"
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
