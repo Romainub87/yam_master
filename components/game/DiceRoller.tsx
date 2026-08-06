@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  useColorScheme,
   ImageBackground,
 } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { Dice } from '@/models/Dice';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';

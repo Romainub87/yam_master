@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, FlatList, useColorScheme } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 import { API_URL } from '@env';

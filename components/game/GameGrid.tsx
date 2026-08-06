@@ -3,10 +3,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  useColorScheme,
   ImageBackground,
   useWindowDimensions,
 } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import {
   faDiceFive,
   faDiceFour,

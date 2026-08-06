@@ -1,14 +1,17 @@
+import React from 'react';
 import { View, TouchableOpacity, Text, useColorScheme } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+type TabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>>[0];
 
 export default function CustomSideTabBar({
   state,
   descriptors,
   navigation,
-}: BottomTabBarProps) {
+}: TabBarProps) {
   const colorScheme = useColorScheme();
   const { logout } = useAuth();
 

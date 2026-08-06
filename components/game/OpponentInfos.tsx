@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, useColorScheme } from 'react-native';
+import { View, Text } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import DiceViewer from '@/components/game/DiceViewer';
 import { GameData } from '@/models/GameData';
 import { Colors } from '@/constants/Colors';

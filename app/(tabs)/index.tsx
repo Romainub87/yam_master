@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View , Text , ImageBackground , useColorScheme , ScrollView } from 'react-native';
+import { View , Text , ImageBackground , ScrollView } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/context/AuthContext';
 import CustomButton from '@/components/CustomButton';
 import { useRouter } from 'expo-router';

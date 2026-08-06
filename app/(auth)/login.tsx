@@ -4,8 +4,8 @@ import {
   TextInput,
   Text,
   ImageBackground,
-  useColorScheme,
 } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/context/AuthContext';
 import { Link } from 'expo-router';
 import CustomButton from '@/components/CustomButton';

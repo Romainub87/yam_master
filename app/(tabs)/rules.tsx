@@ -4,8 +4,8 @@ import {
   Text,
   ImageBackground,
   View,
-  useColorScheme,
 } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 
 export default function RulesScreen() {

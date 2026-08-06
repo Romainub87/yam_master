@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Button, useColorScheme } from 'react-native';
+import { View, Text, Modal, Button } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import DiceRoller from '@/components/game/DiceRoller';
 import { useWebSocket } from '@/context/WebSocketContext';
 import { useAuth } from '@/context/AuthContext';
