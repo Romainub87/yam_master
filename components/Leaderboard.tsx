@@ -17,7 +17,7 @@ export default function Leaderboard() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch(API_URL+'/player/leaderboard');
+                const response = await fetch(API_URL + 'player/leaderboard');
                 const data: User[] = await response.json();
                 setUsers(data.sort((a, b) => b.mmr - a.mmr));
             } catch (error) {
@@ -32,7 +32,7 @@ export default function Leaderboard() {
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center bg-gray-900">
+            <View className="flex-1 justify-center items-center bg-gray-900 px-2">
                 <ActivityIndicator size="large" color="#00FF00" />
             </View>
         );
@@ -44,23 +44,23 @@ export default function Leaderboard() {
             style={{ flex: 1, width: '100%', height: '100%' }}
             resizeMode="cover"
         >
-            <Text className="text-2xl font-bold text-white text-center items-center flex justify-center space-x-2 my-5">
-                <FontAwesome name="trophy" size={40} />
+            <Text className="text-xl md:text-2xl font-bold text-white text-center flex flex-row items-center justify-center space-x-2 my-5">
+                <FontAwesome name="trophy" size={32} />
                 <Text>Classement général</Text>
             </Text>
-            <View className="flex-1 justify-center p-4">
+            <View className="flex-1 justify-center p-2 md:p-4">
                 <FlatList
                     data={users}
                     keyExtractor={(item) => item.username}
                     renderItem={({ item, index }) => (
-                        <View className="flex-row justify-between items-center px-24 w-max min-w-[25vw] mx-auto">
+                        <View className="flex-row justify-center items-center w-full mb-2">
                             <View
                                 style={{ backgroundColor: 'rgba(0, 255, 0, 0.2)' }}
-                                className={`flex-1 flex-row justify-between items-center  px-10 py-2 ${
+                                className={`flex-1 flex-row justify-between items-center px-4 py-2 md:px-10 ${
                                     index === 0 ? 'rounded-t-xl' : ''
                                 } ${index === users.length - 1 ? 'rounded-b-xl' : ''}`}
                             >
-                                <Text className="text-lg text-white text-start">{item.username}</Text>
+                                <Text className="text-base md:text-lg text-white text-start truncate max-w-[40vw]">{item.username}</Text>
                                 <RankImage mmr={item.mmr ?? 0} />
                             </View>
                         </View>
