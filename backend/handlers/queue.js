@@ -19,7 +19,7 @@ export async function handleQueueJoin(client, payload) {
     where: {
       user_id: userId,
       game: {
-        status: 'PAUSED' || 'IN_PROGRESS',
+        status: { in: ['PAUSED', 'IN_PROGRESS'] },
         isBot: false,
       },
     },

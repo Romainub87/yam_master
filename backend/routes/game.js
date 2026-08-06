@@ -1,10 +1,15 @@
 import express from 'express';
 import db from '../connection.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/history/:userId', async (req, res) => {
+router.get('/history/:userId', authenticateToken, async (req, res) => {
     const userId = parseInt(req.params.userId);
+
+    if (userId !== req.user.id) {
+        return res.status(403).json({ error: 'Accès refusé' });
+    }
 
     const playerScores = await db.player_score.findMany({
         where: { user_id: userId }

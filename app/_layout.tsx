@@ -7,11 +7,20 @@ import 'react-native-reanimated';
 import '../global.css';
 import { View } from "react-native";
 import { useColorScheme } from "react-native";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { WebSocketProvider } from "@/context/WebSocketContext";
 import { WS_URL } from '@env';
 
 SplashScreen.preventAutoHideAsync();
+
+function AuthenticatedWebSocketProvider({ children }: { children: React.ReactNode }) {
+  const { userToken } = useAuth();
+  return (
+      <WebSocketProvider url={WS_URL + "/ws"} token={userToken}>
+        {children}
+      </WebSocketProvider>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -30,8 +39,8 @@ export default function RootLayout() {
   }
 
   return (
-      <WebSocketProvider url={WS_URL+"/ws"}>
-        <AuthProvider>
+      <AuthProvider>
+        <AuthenticatedWebSocketProvider>
           <View className={`flex h-full w-screen overflow lg:overflow-hidden ${colorScheme === 'dark' ? 'dark' : ''}`}>
             <Stack>
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -41,8 +50,8 @@ export default function RootLayout() {
             </Stack>
             <StatusBar style="auto" />
           </View>
-        </AuthProvider>
-      </WebSocketProvider>
+        </AuthenticatedWebSocketProvider>
+      </AuthProvider>
 
   );
 }

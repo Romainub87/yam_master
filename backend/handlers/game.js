@@ -77,6 +77,7 @@ export async function handleRollDices(client, payload) {
     const { gameId, userId, dices } = payload;
 
     const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
+    const playerScore = playerScores.find(player => player.user_id === userId);
     const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
 
     const game = await db.game.findUnique({ where: { id: gameId } });
@@ -84,6 +85,14 @@ export async function handleRollDices(client, payload) {
         client.send(JSON.stringify({
             type: MessageTypes.GAME_ERROR,
             message: 'Partie introuvable',
+        }));
+        return;
+    }
+
+    if (!playerScore || !playerScore.turn || playerScore.rolls_left <= 0) {
+        client.send(JSON.stringify({
+            type: MessageTypes.GAME_ERROR,
+            message: "Ce n'est pas votre tour.",
         }));
         return;
     }
@@ -138,6 +147,7 @@ export async function handleLockDice(client, payload) {
     const { gameId, userId, dices, dicePos } = payload;
 
     const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
+    const playerScore = playerScores.find(player => player.user_id === userId);
     const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
 
     const game = await db.game.findUnique({ where: { id: gameId } });
@@ -145,6 +155,14 @@ export async function handleLockDice(client, payload) {
         client.send(JSON.stringify({
             type: MessageTypes.GAME_ERROR,
             message: 'Partie introuvable',
+        }));
+        return;
+    }
+
+    if (!playerScore || !playerScore.turn) {
+        client.send(JSON.stringify({
+            type: MessageTypes.GAME_ERROR,
+            message: "Ce n'est pas votre tour.",
         }));
         return;
     }
@@ -233,13 +251,15 @@ export async function handleTurnChange(client, payload) {
 
         const dice = await resetDices(game);
 
-        gameClient.client.send(JSON.stringify({
-            type: MessageTypes.GAME_UPDATE,
-            opponentScore: playerScore,
-            playerScore: opponentScore,
-            game,
-            dice,
-        }));
+        if (gameClient) {
+            gameClient.client.send(JSON.stringify({
+                type: MessageTypes.GAME_UPDATE,
+                opponentScore: playerScore,
+                playerScore: opponentScore,
+                game,
+                dice,
+            }));
+        }
 
         client.send(JSON.stringify({
             type: MessageTypes.GAME_UPDATE,
@@ -345,7 +365,7 @@ export async function handleForfeit(client, payload) {
 }
 
 export async function handleTimerUpdate(client, payload) {
-    const { gameId, time } = payload;
+    const { gameId } = payload;
 
     const game = await db.game.findUnique({ where: { id: gameId } });
     if (!game || (game.status !== 'IN_PROGRESS' && game.status !== 'PAUSED')) {
@@ -366,7 +386,7 @@ export async function handleTimerUpdate(client, payload) {
 
     const updatedGame = await db.game.update({
         where: { id: gameId },
-        data: { timer: time - 1 },
+        data: { timer: Math.max(game.timer - 1, 0) },
     });
 
     client.send(JSON.stringify({
@@ -387,6 +407,36 @@ export async function handleScoreCombination(client, payload) {
         return;
     }
 
+    const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
+    const playerScore = playerScores.find(player => player.user_id === userId);
+    const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
+
+    if (!playerScore || !playerScore.turn) {
+        client.send(JSON.stringify({
+            type: MessageTypes.GAME_ERROR,
+            message: "Ce n'est pas votre tour.",
+        }));
+        return;
+    }
+
+    const targetCell = game.grid_state?.[row]?.[col];
+    if (!targetCell || targetCell.user !== null || targetCell.combination !== combination) {
+        client.send(JSON.stringify({
+            type: MessageTypes.GAME_ERROR,
+            message: 'Case invalide.',
+        }));
+        return;
+    }
+
+    const validCombinations = calculateValidCombinations(game.dice_state, playerScore, game.grid_state);
+    if (!validCombinations.includes(combination)) {
+        client.send(JSON.stringify({
+            type: MessageTypes.GAME_ERROR,
+            message: 'Combinaison invalide.',
+        }));
+        return;
+    }
+
     const updatedGrid = game.grid_state.map((rowData, rowIndex) =>
         rowIndex === row
             ? rowData.map((cell, colIndex) =>
@@ -397,13 +447,10 @@ export async function handleScoreCombination(client, payload) {
             : rowData
     );
 
-    await db.game.update({
+    const updatedGame = await db.game.update({
         where: { id: gameId },
         data: { grid_state: updatedGrid },
     });
-
-    const playerScores = await db.player_score.findMany({ where: { game_id: gameId } });
-    const opponentUserId = playerScores.find(player => player.user_id !== userId)?.user_id;
 
     const gameClient = getGameClients().find(
         c => c.gameId === gameId && c.userId === opponentUserId
@@ -423,7 +470,7 @@ export async function handleScoreCombination(client, payload) {
     if (gameClient) {
         gameClient.client.send(JSON.stringify({
             type: MessageTypes.OPPONENT_UPDATE,
-            game,
+            game: updatedGame,
             playerScore: updatedPlayerScore,
             opponentScore: updatedOpponentScore,
         }));
@@ -431,7 +478,7 @@ export async function handleScoreCombination(client, payload) {
 
     client.send(JSON.stringify({
         type: MessageTypes.SCORE_COMBINATION,
-        game,
+        game: updatedGame,
         playerScore: updatedPlayerScore,
         opponentScore: updatedOpponentScore,
     }));
@@ -447,6 +494,21 @@ export async function handleChallenge(client, payload) {
       JSON.stringify({
         type: MessageTypes.GAME_ERROR,
         message: 'Partie introuvable',
+        show: false,
+      })
+    );
+    return;
+  }
+
+  const playerScore = await db.player_score.findUnique({
+    where: { game_id_user_id: { game_id: gameId, user_id: userId } },
+  });
+
+  if (!playerScore || !playerScore.turn) {
+    client.send(
+      JSON.stringify({
+        type: MessageTypes.GAME_ERROR,
+        message: "Ce n'est pas votre tour.",
         show: false,
       })
     );

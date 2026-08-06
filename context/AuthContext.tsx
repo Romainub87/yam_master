@@ -82,6 +82,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    useEffect(() => {
+        if (!userToken) {
+            return;
+        }
+
+        let decoded: { exp: number };
+        try {
+            decoded = jwtDecode(userToken);
+        } catch (error) {
+            return;
+        }
+
+        const msUntilExpiry = decoded.exp * 1000 - Date.now();
+        const refreshDelay = Math.max(msUntilExpiry - 60_000, 5_000);
+
+        const timeout = setTimeout(() => {
+            refreshToken();
+        }, refreshDelay);
+
+        return () => clearTimeout(timeout);
+    }, [userToken]);
+
     return (
         <AuthContext.Provider value={{ user, userToken, isLoading, login, logout, refreshToken }}>
             {children}

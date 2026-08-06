@@ -11,22 +11,31 @@ const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefi
 interface WebSocketProviderProps {
     children: React.ReactNode;
     url: string;
+    token: string | null;
 }
 
-export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, url }) => {
+export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, url, token }) => {
     const [socket, setSocket] = useState<WebSocket | null>(null);
     const [lastMessage, setLastMessage] = useState<any>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
+        if (!token) {
+            setSocket(null);
+            setIsConnected(false);
+            return;
+        }
+
         let ws: WebSocket | null = null;
+        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+        let shouldReconnect = true;
 
         const connectWebSocket = () => {
             if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
                 return;
             }
 
-            ws = new WebSocket(url);
+            ws = new WebSocket(`${url}?token=${encodeURIComponent(token)}`);
 
             ws.onopen = () => {
                 setIsConnected(true);
@@ -43,6 +52,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
 
             ws.onclose = () => {
                 setIsConnected(false);
+                if (shouldReconnect) {
+                    reconnectTimeout = setTimeout(connectWebSocket, 3000);
+                }
             };
 
             ws.onerror = () => {
@@ -55,11 +67,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children, 
         connectWebSocket();
 
         return () => {
+            shouldReconnect = false;
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+            }
             if (ws) {
                 ws.close();
             }
         };
-    }, [url]);
+    }, [url, token]);
 
     const lastSentMessageRef = React.useRef<string | null>(null);
 

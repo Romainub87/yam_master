@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { API_URL } from '@env';
 
 export default function GameHistory() {
-    const { user } = useAuth();
+    const { user, userToken } = useAuth();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const colorScheme = useColorScheme();
@@ -13,7 +13,9 @@ export default function GameHistory() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const response = await fetch(API_URL+`game/history/${user?.id}`);
+                const response = await fetch(API_URL+`game/history/${user?.id}`, {
+                    headers: { Authorization: `Bearer ${userToken}` },
+                });
                 const data = await response.json();
                 setHistory(data);
             } catch (error) {
@@ -23,10 +25,10 @@ export default function GameHistory() {
             }
         };
 
-        if (user) {
+        if (user && userToken) {
             fetchHistory();
         }
-    }, [user]);
+    }, [user, userToken]);
 
     if (loading) {
         return <ActivityIndicator size="large" />;

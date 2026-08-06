@@ -56,7 +56,7 @@ export function setupWebSocket(wss) {
         const handler = handlers[type];
 
         if (handler) {
-          handler(ws, payload);
+          handler(ws, { ...payload, userId: ws.userId });
         }
       } catch (err) {
         ws.send(
